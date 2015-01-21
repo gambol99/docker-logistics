@@ -98,16 +98,16 @@ Note: Though the variables have been stripped out below, our bootstrap process p
           ExecStartPre=/usr/bin/sed -i 's/\$_private/$private/g' /run/cloud-config.yml
           ExecStart=/usr/bin/coreos-cloudinit --from-file=/run/cloud-config.yml
 
-  manage-resolv-conf: true
-  hostname: CHANGE_ME_THE_HOSTNAME
-  resolv_conf:
-    nameservers: [ 'DNS_SERVICE_IP_ADDRESS_CHANGE_ME' ]
-    searchdomains:
-      - changeme.domain.com
-    domain: changeme.domain.com
-    options:
-      rotate: true
-      timeout: 1
-
-  ssh_authorized_keys:
-    - <MY PUBLIC KEY>
+    manage-resolv-conf: true
+    hostname: CHANGE_ME_THE_HOSTNAME
+    resolv_conf:
+      nameservers: [ 'DNS_SERVICE_IP_ADDRESS_CHANGE_ME' ]
+      searchdomains:
+        - changeme.domain.com
+      domain: changeme.domain.com
+      options:
+        rotate: true
+        timeout: 1
+  
+    ssh_authorized_keys:
+      - <MY PUBLIC KEY>
