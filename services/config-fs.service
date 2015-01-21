@@ -1,0 +1,36 @@
+[Unit]
+Description=Configuration Store
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill config-store
+ExecStartPre=-/usr/bin/docker rm config-store
+ExecStartPre=/usr/bin/docker pull gambol99/config-fs
+ExecStart=/usr/bin/docker run \
+  --name config-store \
+  -e NAME=config-store \
+  -e ENVIRONMENT=prod \
+  -e PRIVATE_IP=${COREOS_PRIVATE_IPV4} \
+  -e VERBOSITY=10 \
+  -v /config:/config \
+  gambol99/config-fs \
+  -mount=/config \
+  -store=etcd://${COREOS_PRIVATE_IPV4}:4001 \
+  -discovery=consul://${COREOS_PRIVATE_IPV4}:8500 \
+  -root=/env/prod
+
+# -e CONFIG_URL=`curl -s http://${COREOS_PRIVATE_IPV4}:4001/v1/machines | sed -e 's/\(http:\/\/\| \)//g' -e 's/^/etcd:\/\//'` \
+
+ExecStop=/usr/bin/docker stop config-store
+ExecStop=/usr/bin/docker rm config-store
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true

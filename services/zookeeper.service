@@ -1,0 +1,36 @@
+[Unit]
+Description=Zookeeper Service
+
+# TODO - this need to be clustered
+
+# Requirements
+Requires=etcd.service
+Requires=docker.service
+
+# Dependency ordering
+After=etcd.service
+After=docker.service
+
+[Service]
+TimeoutStartSec=0
+KillMode=none
+EnvironmentFile=/etc/environment
+ExecStartPre=-/usr/bin/docker kill zookeeper
+ExecStartPre=-/usr/bin/docker rm zookeeper
+ExecStartPre=/usr/bin/docker pull jplock/zookeeper:3.4.6
+ExecStartPre=/usr/bin/etcdctl set /bootstrap/mesos/zookeeper ${COREOS_PRIVATE_IPV4}
+ExecStart=/usr/bin/docker run -p 2181:2181 -p 2888:2888 -p 3888:3888 \
+--name zookeeper \
+-e ENVIRONMENT=prod \
+-e NAME=frontend \
+-e SERVICE_NAME=zookeeper \
+-e SERVICE_2888_NAME=zookeeper_peer \
+-e SERVICE_3888_NAME=zookeeper_leader \
+-e SERVICE_2181_NAME=zookeeper_client \
+jplock/zookeeper:3.4.6
+
+ExecStop=/usr/bin/docker stop zookeeper
+
+[X-Fleet]
+# Don't schedule on the same machine as other Apache instances
+#X-Conflicts=apache@*.service

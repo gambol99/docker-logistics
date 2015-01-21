@@ -1,0 +1,40 @@
+#
+#   Author: Rohith (gambol99@gmail.com)
+#   Date: 2014-10-16 15:57:29 +0100 (Thu, 16 Oct 2014)
+#
+#  vim:ts=2:sw=2:et
+#
+[Unit]
+Description=Docker Registrar
+After=etcd.service
+After=docker.service
+Requires=etcd.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill registrar
+ExecStartPre=-/usr/bin/docker rm registrar
+ExecStartPre=/usr/bin/docker pull quay.io/gambol99/service-registrar:latest
+#ExecStartPre=/usr/bin/docker pull hub:5000/service-registrar
+ExecStart=/usr/bin/docker run --name registrar \
+-e ENVIRONMENT=prod \
+-e APP=registrar \
+-e NAME=registrar \
+-e INTERVAL=3000 \
+-e SERVICE_NAME=registrar \
+-e HOST=${COREOS_PRIVATE_IPV4} \
+-e IPADDRESS=${COREOS_PRIVATE_IPV4} \
+-e BACKEND=consul://${COREOS_PRIVATE_IPV4}:8500 \
+-e DOCKER_SOCKET=/var/run/docker.sock \
+-v /var/run/docker.sock:/var/run/docker.sock \
+quay.io/gambol99/service-registrar
+
+ExecStop=/usr/bin/docker stop registrar
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true

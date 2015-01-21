@@ -1,0 +1,100 @@
+{
+  "id": "/noths",
+  "groups": [
+    {
+      "id": "frontend",
+      "apps": [
+        {
+          "id": "app",
+          "mem": 64,
+          "env": {
+            "ENVIRONMENT": "prod",
+            "SERVICE_80_NAME": "apache_http",
+            "SERVICE_443_NAME": "apache_https",
+            "NAME": "frontend",
+            "BACKEND_MYSQL_MASTER": "mysql;3306",
+            "BACKEND_CACHE": "redis_cache;6379"
+          },
+          "dependencies": [
+            "database",
+            "caching"
+          ],
+          "container": {
+            "type": "DOCKER",
+            "docker": {
+              "image": "quay.io/gambol99/apache-php:latest",
+              "network": "BRIDGE",
+              "portMappings": [
+                {
+                  "containerPort": 80,
+                  "hostPort": 0,
+                  "protocol": "tcp"
+                },
+                {
+                  "containerPort": 443,
+                  "hostPort": 0,
+                  "protocol": "tcp"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "database",
+      "apps": [
+        {
+          "id": "mysql",
+          "mem": 1024,
+          "env": {
+            "ENVIRONMENT": "prod",
+            "SERVICE_NAME": "dbmaster",
+            "SERVICE_3306_NAME": "mysql",
+            "MYSQL_PASS": "mysql",
+            "REPLICATION_MASTER": "true",
+            "REPLICATION_USER": "replication",
+            "REPLICATION_PASS": "8d67as9f7sjhsdfsd"
+          },
+          "container": {
+            "type": "DOCKER",
+            "docker": {
+              "image": "tutum/mysql",
+              "network": "BRIDGE",
+              "portMappings": [
+                { "containerPort": 3306, "hostPort": 0, "protocol": "tcp" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "caching",
+      "apps": [
+        {
+          "id": "redis",
+          "mem": 128,
+          "env": {
+            "ENVIRONMENT": "prod",
+            "SERVICE_6379_NAME": "redis_cache"
+          },
+          "container": {
+            "type": "DOCKER",
+            "docker": {
+              "image": "redis",
+              "network": "BRIDGE",
+              "portMappings": [
+                {
+                  "containerPort": 6379,
+                  "hostPort": 0,
+                  "protocol": "tcp"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

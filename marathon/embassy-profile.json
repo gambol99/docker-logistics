@@ -1,0 +1,26 @@
+{
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "quay.io/gambol99/toolbox:latest",
+      "network": "BRIDGE"
+    }
+  },
+  "volumes": [
+    {
+        "containerPath": "/data",
+        "hostPath": "/tmp",
+        "mode": "RW"
+    }
+  ],
+  "args": [ "ab", "-n", "10000", "-c", "20", "http://172.17.42.1/hostname.php", ">", "/data/$HOSTNAME-report", "; sleep 120" ],
+  "env": {
+    "NAME": "embassy-profiler",
+    "ENVIRONMENT": "test",
+    "BACKEND_APACHE": "frontend_http;80"
+  },
+  "id": "/prodcut/profile/embassy",
+  "instances": 1,
+  "cpus": 0.2,
+  "mem": 128
+}

@@ -1,0 +1,33 @@
+[Unit]
+Description=Zookeeper Service
+Requires=etcd.service
+Requires=docker.service
+
+After=etcd.service
+After=docker.service
+
+[Service]
+TimeoutStartSec=0
+KillMode=none
+EnvironmentFile=/etc/environment
+ExecStartPre=-/usr/bin/docker kill mesos-config
+ExecStartPre=-/usr/bin/docker rm mesos-config
+ExecStartPre=/usr/bin/docker pull quay.io/gambol99/mesos-config
+ExecStart=/usr/bin/bash -c "/usr/bin/docker run \
+--name mesos-config \
+-p 2181:2181 -p 2888:2888 -p 3888:3888 \
+-e ENVIRONMENT=prod \
+-e SERVICE_NAME=mesos-config \
+-e HOST=$HOSTNAME \
+-e JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.71-2.5.3.1.el7_0.x86_64/jre \
+-e ZOO_SERVERS=101:core101,102:core102,103:core103 \
+-e SERVICE_2888_NAME=mesos-config-peer \
+-e SERVICE_3888_NAME=mesos-config-leader \
+-e SERVICE_2181_NAME=mesos-config-client \
+quay.io/gambol99/mesos-config"
+
+ExecStop=/usr/bin/docker stop mesos-config
+ExecStop=/usr/bin/docker rm mesos-config
+
+[X-Fleet]
+Global=true

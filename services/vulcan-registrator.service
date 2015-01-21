@@ -1,0 +1,35 @@
+#
+#   Author: Rohith (gambol99@gmail.com)
+#   Date: 2015-01-09 16:58:06 +0000 (Fri, 09 Jan 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+[Unit]
+Description=Vulcand Registrator
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill vulcan-registrator
+ExecStartPre=-/usr/bin/docker rm vulcan-registrator
+ExecStartPre=/usr/bin/docker pull gambol99/vulcan-registrator
+ExecStart=/usr/bin/docker run \
+  --name vulcan-registrator \
+  -e NAME=vulcan-registrator \
+  -e ENVIRONMENT=prod \
+  -e ETCD=${COREOS_PRIVATE_IPV4} \
+  -e IPADDRESS=${COREOS_PRIVATE_IPV4} \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  gambol99/vulcan-registrator -v
+
+ExecStop=/usr/bin/docker stop vulcan-registrator
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true

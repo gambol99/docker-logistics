@@ -1,0 +1,23 @@
+{
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "quay.io/gambol99/apache-php:latest",
+      "network": "BRIDGE",
+      "portMappings": [
+        { "containerPort": 80, "hostPort": 0, "protocol": "tcp"}
+      ]
+    }
+  },
+  "args": [ "/usr/sbin/apache2ctl", "-D", "FOREGROUND" ],
+  "env": {
+    "NAME": "backend",
+    "ENVIRONMENT": "prod",
+    "SERVICE_80_NAME": "api-sessions",
+    "VS_80_BACKEND_ID": "api-sessions"
+  },
+  "id": "/product/api/sessions",
+  "instances": 3,
+  "cpus": 0.2,
+  "mem": 32
+}

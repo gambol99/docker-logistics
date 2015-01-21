@@ -1,0 +1,41 @@
+{
+  "id": "/prod/elasticsearch/es-prod",
+  "instances": 3,
+  "cpus": 0.3,
+  "mem": 256,
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "quay.io/gambol99/elasticsearch:latest",
+      "network": "BRIDGE",
+      "portMappings": [
+        { "containerPort": 9200, "hostPort": 0, "protocol": "tcp"},
+        { "containerPort": 9300, "hostPort": 0, "protocol": "tcp"}
+      ]
+    },
+    "volumes": [
+      {
+          "containerPath": "/usr/share/elasticsearch/config/elasticsearch.yml",
+          "hostPath": "/config/env/prod/config/elasticsearch/es-prod.yml",
+          "mode": "RO"
+      }
+    ]
+  },
+  "constraints": [
+    [
+      "hostname",
+      "UNIQUE"
+    ]
+  ],
+  "args": [ "/bin/bash", "/startup.sh" ],
+  "env": {
+    "NAME": "elasticsearch",
+    "ENVIRONMENT": "prod",
+    "CLUSTER": "es-prod",
+    "CONFIG": "/usr/share/elasticsearch/config/elasticsearch.yml",
+    "PLUGINS": "karmi/elasticsearch-paramedic",
+    "SERVICE_9200_NAME": "es-prod-clients",
+    "SERVICE_9300_NAME": "es-prod-peers",
+    "SERVICE_DELAY": "10"
+  }
+}

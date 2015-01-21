@@ -1,0 +1,47 @@
+{
+  "id": "/prod/metrics/graphite/shard/1",
+  "instances": 1,
+  "mem": 1024,
+  "cpus": 0.1,
+  "dependencies": [
+    "/prod/metrics/graphite/memcached"
+  ],
+  "constraints": [
+    [
+      "hostname",
+      "UNIQUE"
+    ]
+  ],
+  "env": {
+    "NAME": "graphite",
+    "ENVIRONMENT": "prod",
+    "SERVICE_80_NAME": "graphite-web",
+    "SERVICE_2114_NAME": "graphite-distro-relay1",
+    "BACKEND_MEMCACAHED": "graphite-memcached;11211",
+    "BACKEND_GRAPHITE_SHARD_1": "graphite-distro-relay1;2114"
+  },
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "dockerana/graphite",
+      "network": "BRIDGE",
+      "portMappings": [
+        { "containerPort": 80, "hostPort": 0, "protocol": "tcp"},
+        { "containerPort": 2114, "hostPort": 0, "protocol": "tcp"}
+      ]
+    },
+    "volumes": [
+      {
+        "containerPath": "/opt/graphite/conf/carbon.conf",
+        "hostPath": "/config/env/prod/config/graphite/carbon.conf",
+        "mode": "RO"
+      },
+      {
+        "containerPath": "/opt/graphite/conf/relay-rules.conf",
+        "hostPath": "/config/env/prod/config/graphite/relay-rules.conf",
+        "mode": "RO"
+      }
+    ]
+  }
+}
+

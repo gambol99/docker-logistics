@@ -1,0 +1,23 @@
+{
+  "id": "/product/redis/stats",
+  "instances": 2,
+  "cpus": 0.1,
+  "mem": 128,
+  "constraints": [["hostname", "UNIQUE"]],
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "redis:latest",
+      "network": "BRIDGE",
+      "portMappings": [
+        { "containerPort": 6379, "hostPort": 0, "protocol": "tcp"}
+      ]
+    }
+  },
+  "args": [],
+  "env": {
+    "NAME": "stats",
+    "ENVIRONMENT": "prod",
+    "SERVICE_6379_NAME": "stats"
+  }
+}

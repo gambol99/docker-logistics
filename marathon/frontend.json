@@ -1,0 +1,26 @@
+{
+  "id": "/product/web/frontend",
+  "instances": 3,
+  "mem": 64,
+  "cpus": 0.2,
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "quay.io/gambol99/apache-php:latest",
+      "network": "BRIDGE",
+      "portMappings": [
+        { "containerPort": 80,  "hostPort": 0, "protocol": "tcp" },
+        { "containerPort": 443, "hostPort": 0, "protocol": "tcp" }
+      ]
+    }
+  },
+  "args": [ "/usr/sbin/apache2ctl", "-D", "FOREGROUND" ],
+  "env": {
+    "NAME": "frontend",
+    "ENVIRONMENT": "prod",
+    "SERVICE_80_NAME": "frontend_http",
+    "SERVICE_443_NAME": "frontend_https",
+    "VS_80_BACKEND_ID": "frontend_http",
+    "VS_443_BACKEND_ID": "frontend_https"
+  }
+}

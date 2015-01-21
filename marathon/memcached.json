@@ -1,0 +1,23 @@
+{
+  "id": "/product/cache/memcached",
+  "instances": 1,
+  "mem": 256,
+  "cpus": 0.2,
+  "constraints": [["hostname", "UNIQUE"]],
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "sylvainlasnier/memcached",
+      "network": "BRIDGE",
+      "portMappings": [
+        { "containerPort": 11211,  "hostPort": 0, "protocol": "tcp" }
+      ]
+    }
+  },
+  "args": [],
+  "env": {
+    "NAME": "memcached",
+    "ENVIRONMENT": "prod",
+    "SERVICE_11211_NAME": "memcached"
+  }
+}

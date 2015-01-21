@@ -1,0 +1,37 @@
+[Unit]
+Description=Consul Slave %i
+Requires=etcd.service
+Requires=docker.service
+After=etcd.service
+After=docker.service
+After=consul-master.service
+
+[Service]
+TimeoutStartSec=0
+KillMode=none
+EnvironmentFile=/etc/environment
+ExecStartPre=-/usr/bin/docker kill consul.%i.slave
+ExecStartPre=-/usr/bin/docker rm consul.%i.slave
+ExecStartPre=/usr/bin/docker pull progrium/consul:latest
+ExecStart=/usr/bin/bash -c "/usr/bin/docker run \
+--name consul.%i.slave \
+-e ENVIRONMENT=prod \
+-e APP=consul \
+-e NAME=consul-slave \
+-p ${COREOS_PRIVATE_IPV4}:8300:8300 \
+-p ${COREOS_PRIVATE_IPV4}:8301:8301 \
+-p ${COREOS_PRIVATE_IPV4}:8301:8301/udp \
+-p ${COREOS_PRIVATE_IPV4}:8302:8302 \
+-p ${COREOS_PRIVATE_IPV4}:8302:8302/udp \
+-p ${COREOS_PRIVATE_IPV4}:8400:8400 \
+-p ${COREOS_PRIVATE_IPV4}:8500:8500 \
+-p 172.17.42.1:53:53/udp \
+progrium/consul -server -node ${COREOS_PRIVATE_IPV4} -advertise ${COREOS_PRIVATE_IPV4} -join `etcdctl get /consul/bootstrap`"
+
+# Stop
+ExecStop=/usr/bin/docker stop consul.%i.slave
+
+[X-Fleet]
+X-Conflicts=consul-master.service
+X-Conflicts=consul-slave@*.service
+

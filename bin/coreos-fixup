@@ -1,0 +1,29 @@
+#!/bin/bash
+
+FLEETCTL_ENDPOINT="http://10.0.1.101:4001"
+FLEETCTL="fleetctl"
+
+say() {
+  echo "** $@"
+}
+
+coreos_setup() {
+  for machine in `vagrant status | grep '^core' | cut -d' ' -f1`; do
+    say "Ensure CoreOS cluster is setup correctly"
+    vagrant ssh $machine -c "sudo /usr/bin/coreos-cloudinit --from-file=/var/lib/coreos-vagrant/vagrantfile-user-data" >/dev/null
+  done 
+}
+
+setup() {
+  say "Bringing up the CoreOS cluster"
+  vagrant up
+  say "Ensuring the state of the cluster"
+  coreos_setup
+  say "Listing the CoreOS machines"
+  fleetctl -endpoint=$FLEETCTL_ENDPOINT list-machines
+}
+
+case $1 in 
+  cluster)    coreos_setup;;
+  *)          setup;;
+esac
