@@ -1,0 +1,37 @@
+#
+#   Author: Rohith (gambol99@gmail.com)
+#   Date: 2015-01-26 17:41:56 +0000 (Mon, 26 Jan 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+Unit]
+Description=Gateway Service
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill gateway
+ExecStartPre=-/usr/bin/docker rm gateway
+ExecStartPre=/usr/bin/docker pull quay.io/gambol99/gateway
+ExecStart=/usr/bin/docker run \
+  --name gateway \
+  -p 1022:22 \
+  -e NAME=gateway \
+  -e ENVIRONMENT=prod \
+  -e PRIVATE_IP=${COREOS_PRIVATE_IPV4} \
+  -v /:/coreos \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+ quay.io/gambol99/gateway
+
+ExecStop=/usr/bin/docker stop gateway
+ExecStop=/usr/bin/docker rm gateway
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true
