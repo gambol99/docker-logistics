@@ -12,23 +12,23 @@ ExecStartPre=-/usr/bin/docker kill marathon
 ExecStartPre=-/usr/bin/docker rm marathon
 ExecStartPre=/usr/bin/docker pull mesosphere/marathon:latest
 ExecStart=/usr/bin/sh -c "/usr/bin/docker run \
-    --name marathon \
-    --net=host \
-    -e LIBPROCESS_PORT=9090 \
-    -p 8080:8080 \
-    -p 9090:9090 \
-    mesosphere/marathon:latest \
-    --master zk://`etcdctl get /bootstrap/mesos/zookeeper`:2181/mesos \
-    --zk zk://`etcdctl get /bootstrap/mesos/zookeeper`:2181/marathon \
-    --zk_timeout 10000 \
-    --hostname $(/usr/bin/ip -o -4 addr list eth0 | grep global | awk \'{print $4}\' | cut -d/ -f1) \
-    --http_port 8080 \
-    --failover_timeout 604800 \
-    --local_port_min 10000 \
-    --local_port_max 32000 \
-    --checkpoint \
-    --task_launch_timeout 300000 \
-    --event_subscriber http_callback"
+  --name marathon \
+  --net=host \
+  -e LIBPROCESS_PORT=9090 \
+  -p 8080:8080 \
+  -p 9090:9090 \
+  mesosphere/marathon:latest \
+  --master zk://`etcdctl get /bootstrap/mesos/zookeeper`:2181/mesos \
+  --zk zk://`etcdctl get /bootstrap/mesos/zookeeper`:2181/marathon \
+  --zk_timeout 10000 \
+  --hostname $(/usr/bin/ip -o -4 addr list eth0 | grep global | awk \'{print $4}\' | cut -d/ -f1) \
+  --http_port 8080 \
+  --event_subscriber http_callback \
+  --failover_timeout 604800 \
+  --local_port_min 10000 \
+  --local_port_max 32000 \
+  --checkpoint \
+  --task_launch_timeout 300000"
 
 ExecStop=/usr/bin/docker stop marathon
 
