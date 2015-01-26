@@ -27,7 +27,8 @@ ExecStart=/usr/bin/sh -c "/usr/bin/docker run \
     --local_port_min 10000 \
     --local_port_max 32000 \
     --checkpoint \
-    --task_launch_timeout 300000"
+    --task_launch_timeout 300000 \
+    --event_subscriber http_callback"
 
 ExecStop=/usr/bin/docker stop marathon
 
