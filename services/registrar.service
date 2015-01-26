@@ -16,9 +16,9 @@ EnvironmentFile=/etc/environment
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill registrar
 ExecStartPre=-/usr/bin/docker rm registrar
-ExecStartPre=/usr/bin/docker pull quay.io/gambol99/service-registrar:latest
-#ExecStartPre=/usr/bin/docker pull hub:5000/service-registrar
-ExecStart=/usr/bin/docker run --name registrar \
+ExecStartPre=/usr/bin/docker pull gambol99/service-registrar
+ExecStart=/usr/bin/docker run \
+--name registrar \
 -e ENVIRONMENT=prod \
 -e APP=registrar \
 -e NAME=registrar \
@@ -26,10 +26,10 @@ ExecStart=/usr/bin/docker run --name registrar \
 -e SERVICE_NAME=registrar \
 -e HOST=${COREOS_PRIVATE_IPV4} \
 -e IPADDRESS=${COREOS_PRIVATE_IPV4} \
--e BACKEND=consul://${COREOS_PRIVATE_IPV4}:8500 \
+-e BACKEND=etcd://${COREOS_PRIVATE_IPV4}:4001 \
 -e DOCKER_SOCKET=/var/run/docker.sock \
 -v /var/run/docker.sock:/var/run/docker.sock \
-quay.io/gambol99/service-registrar
+gambol99/service-registrar
 
 ExecStop=/usr/bin/docker stop registrar
 

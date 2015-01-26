@@ -20,7 +20,9 @@ ExecStartPre=-/usr/bin/docker kill embassy.proxy
 ExecStartPre=-/usr/bin/docker rm embassy.proxy
 ExecStartPre=-/usr/bin/chmod og+rw /var/run/docker.sock
 ExecStartPre=/usr/bin/docker pull gambol99/embassy
-ExecStart=/usr/bin/docker run --privileged=true --net=host \
+ExecStart=/usr/bin/docker run \
+--privileged=true \
+--net=host \
 --name embassy.proxy \
 -e ENVIRONMENT=prod \
 -e NAME=embassy \
@@ -30,6 +32,8 @@ gambol99/embassy \
 --dnat -v=3 -interface=eth0 \
 -discovery=consul://${COREOS_PRIVATE_IPV4}:8500 \
 -provider=docker
+
+#-discovery=etcd://${COREOS_PRIVATE_IPV4}:4001 \
 
 ExecStop=/usr/bin/docker stop embassy.proxy
 
