@@ -1,24 +1,11 @@
 {
-  "id": "/noths",
+  "id": "/qa/product/1",
   "groups": [
     {
       "id": "frontend",
       "apps": [
         {
-          "id": "app",
-          "mem": 64,
-          "env": {
-            "ENVIRONMENT": "prod",
-            "SERVICE_80_NAME": "apache_http",
-            "SERVICE_443_NAME": "apache_https",
-            "NAME": "frontend",
-            "BACKEND_MYSQL_MASTER": "mysql;3306",
-            "BACKEND_CACHE": "redis_cache;6379"
-          },
-          "dependencies": [
-            "database",
-            "caching"
-          ],
+          "cmd": "",
           "container": {
             "type": "DOCKER",
             "docker": {
@@ -37,25 +24,24 @@
                 }
               ]
             }
-          }
-        }
-      ]
-    },
-    {
-      "id": "database",
-      "apps": [
-        {
-          "id": "mysql",
-          "mem": 1024,
-          "env": {
-            "ENVIRONMENT": "prod",
-            "SERVICE_NAME": "dbmaster",
-            "SERVICE_3306_NAME": "mysql",
-            "MYSQL_PASS": "mysql",
-            "REPLICATION_MASTER": "true",
-            "REPLICATION_USER": "replication",
-            "REPLICATION_PASS": "8d67as9f7sjhsdfsd"
           },
+          "id": "apache",
+          "mem": 64,
+          "args": [],
+          "env": {
+            "ENVIRONMENT": "qa",
+            "SERVICE_80_NAME": "apache_http-qa-1",
+            "SERVICE_443_NAME": "apache_https-qa-1",
+            "NAME": "frontend",
+            "BACKEND_MYSQL_MASTER": "mysql-qa-1;3306",
+            "BACKEND_CACHE": "redis-qa-1;6379"
+          },
+          "dependencies": [
+            "/qa/product/1/database",
+            "/qa/product/1/caching"
+          ]
+        },{
+          "id": "database",
           "container": {
             "type": "DOCKER",
             "docker": {
@@ -65,20 +51,20 @@
                 { "containerPort": 3306, "hostPort": 0, "protocol": "tcp" }
               ]
             }
-          }
-        }
-      ]
-    },
-    {
-      "id": "caching",
-      "apps": [
-        {
-          "id": "redis",
-          "mem": 128,
-          "env": {
-            "ENVIRONMENT": "prod",
-            "SERVICE_6379_NAME": "redis_cache"
           },
+          "id": "mysql",
+          "mem": 1024,
+          "cmd": "",
+          "env": {
+            "ENVIRONMENT": "qa",
+            "SERVICE_NAME": "dbmaster",
+            "SERVICE_3306_NAME": "mysql-qa-1",
+            "MYSQL_PASS": "mysql",
+            "REPLICATION_MASTER": "true",
+            "REPLICATION_USER": "replication",
+            "REPLICATION_PASS": "8d67as9f7sjhsdfsd"
+          }
+        },{
           "container": {
             "type": "DOCKER",
             "docker": {
@@ -92,6 +78,13 @@
                 }
               ]
             }
+          },
+          "id": "caching",
+          "cmd": "",
+          "mem": 128,
+          "env": {
+            "ENVIRONMENT": "qa",
+            "SERVICE_6379_NAME": "redis-qa-1"
           }
         }
       ]
