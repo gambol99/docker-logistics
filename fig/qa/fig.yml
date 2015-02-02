@@ -1,0 +1,27 @@
+default: &default
+  domainname: qa.domain.com
+
+etcd:
+  image: "coreos/etcd"
+  ports:
+    - "7001"
+
+db:
+  image: "tutum/mysql"
+  ports:
+    - "3306"
+
+elasticsearch:
+  image: "quay.io/gambol99/elasticsearch"
+  ports:
+    - "9200"
+    - "9300"
+
+product:
+  image: "quay.io/gambol99/apache-php:latest"
+  ports:
+    - "80"
+  links:
+    - "db"
+    - "etcd"
+    - "elasticsearch"

@@ -13,14 +13,14 @@ ExecStartPre=-/usr/bin/docker rm consul
 ExecStartPre=/usr/bin/docker pull progrium/consul
 ExecStart=/usr/bin/bash -c " \
 eval " \
-sleep ${RANDOM:1:1} \
-MASTER=`/usr/bin/etcdctl get /consul/bootstrap` \
-if [ $? -ne 0 ]; then \
-  /usr/bin/etcdctl set /consul/bootstrap ${COREOS_PRIVATE_IPV4} \
-  OPTIONS="-bootstrap" \
-else \
-  OPTIONS="-join $MASTER" \
-fi \
+sleep ${RANDOM:1:1}; \
+MASTER=`/usr/bin/etcdctl get /consul/bootstrap`; \
+if [ $? -ne 0 ]; then; \
+  /usr/bin/etcdctl set /consul/bootstrap ${COREOS_PRIVATE_IPV4}; \
+  OPTIONS="-bootstrap"; \
+else; \
+  OPTIONS="-join $MASTER"; \
+fi; \
 \
 /usr/bin/docker run \
 --name consul \
@@ -34,10 +34,10 @@ fi \
 -p ${COREOS_PRIVATE_IPV4}:8400:8400 \
 -p ${COREOS_PRIVATE_IPV4}:8500:8500 \
 -p 172.17.42.1:53:53/udp \
-progrium/consul -server -node $COREOS_PRIVATE_IPV4 -advertise $COREOS_PRIVATE_IPV4 ${OPTIONS}""
+progrium/consul -server -node ${COREOS_PRIVATE_IPV4} -advertise ${COREOS_PRIVATE_IPV4} ${OPTIONS}""
 
 # Stop
 ExecStop=-/usr/bin/docker stop consul
 
-[X-Fleet]
-Global=true
+#[X-Fleet]
+#Global=true
