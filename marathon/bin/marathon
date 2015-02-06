@@ -1,0 +1,286 @@
+#!/usr/bin/env ruby
+#
+#   Author: Rohith (gambol99@gmail.com)
+#   Date: 2015-02-03 10:40:29 +0000 (Tue, 03 Feb 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+require 'httparty'
+require 'json'
+require 'yaml'
+require 'optionscrapper'
+require 'uri'
+require 'pp'
+
+# Note, this is quick and dirty
+
+module Marathon
+  module Utils
+    def validate_file filename
+      raise ArgumentError, "you have not specified a filename to validate" unless filename
+      raise ArgumentError, "the file: #{filename} does not exist" unless File.exist? filename
+      raise ArgumentError, "the file: #{filename} is not a file" unless File.file? filename
+      raise ArgumentError, "the file: #{filename} is not readable" unless File.readable? filename
+      filename
+    end
+
+    def validate_url url
+      raise ArgumentError, "invalid url specified: #{url}" unless url =~ URI::regexp
+      url
+    end
+  end
+
+  module Logging
+    def verbose message
+      puts "v: #{message}" if options[:verbose]
+    end
+
+    def usage message
+      raise Exception, message
+    end
+  end
+
+  module API
+    VERSION = "v2"
+    DEFAULT_TIMEOUT = 10
+
+    def apps application
+      id = application['id']
+      verbose "Checking if the application: #{id} already exists"
+      if application? id
+        verbose "Application: #{id} already exists, updating instead"
+        unmarshall(put( "%s/apps" % [ endpoint ], application ))
+      else
+        verbose "Pushing a new application: #{id}"
+        unmarshall(post( "%s/apps" % [ endpoint ], application ))
+      end
+    end
+
+    def groups application
+      id = application['id']
+      verbose "Checking for the application group: #{id} exists"
+      if group? id
+        verbose "Application Group: #{id} already exists, updating the group instead"
+        unmarshall(put( "%s/groups" % [ endpoint ], application ))
+      else
+        verbose "Creating a new application frp"
+        unmarshall(post( "%s/groups" % [ endpoint ], application ))
+      end
+    end
+
+    def application_tasks id
+      raise ArgumentError, "the application: #{id} does not exists" unless application? application
+      (unmarshall(get( "%s/apps/%s/tasks" % [ endpoint, id ] )) || {})['tasks'] || []
+    end
+
+    def app id
+      raise "the application: #{id} does not exists" unless application? id
+      unmarshall(get( "%s/apps/%s" % [ endpoint, id ] ))['app']
+    end
+
+    def application? id
+      !applications.select { |x|
+        x['id'] == id
+      }.empty?
+    end
+
+    def applications
+      (unmarshall(( get( "%s/apps" % [ endpoint ]  ))) || {} )["apps"] || []
+    end
+
+    def group? id
+      !groups.select { |x|
+        x['id'] == id
+      }.empty?
+    end
+
+    def groups
+      (unmarshall(( get( "%s/groups" % [ endpoint ] ))) || {} )["groups"] || []
+    end
+
+    private
+    def unmarshall response
+      JSON.parse(response.body) if response.body
+    end
+
+    def endpoint
+      "%s:%s/%s" % [ options[:marathon], options[:port], VERSION ]
+    end
+
+    def post(url, data)
+      http_request(:post, url, { :body => data.to_json } )
+    end
+
+    def put(url, data)
+      http_request(:put, url, { :body => data.to_json } )
+    end
+
+    def get(url)
+      http_request(:get, url, {})
+    end
+
+    def delete(url,data)
+      http_request(:delete, url, {})
+    end
+
+    def http_request(method, url, options)
+      response = HTTParty.send(method, url, default_headers.merge(options))
+      if response.code < 200 || response.code >= 300
+        raise ArgumentError, "invalid reply, response: #{response}"
+      end
+      response
+    end
+
+    def default_headers
+      {
+        :headers => { 'Content-Type' => 'application/json' },
+        :timeout => DEFAULT_TIMEOUT
+      }
+    end
+  end
+
+  class CLI
+    include Marathon::Utils
+    include Marathon::Logging
+    include Marathon::API
+
+    def initialize
+      begin
+        parser.parse!
+        send options[:command] if options[:command]
+      rescue SystemExit => e
+        exit e.status
+      rescue Exception  => e
+        parser.usage e.message
+      end
+    end
+
+    private
+    def convert
+      # step: check the file
+      validate_file options[:app]
+      # step: convert to yaml
+      puts JSON.parse(File.read(options[:app])).to_yaml
+    end
+
+    def cat
+      usage "you must specific an application / group application id to retrieve" unless options[:id]
+      application = nil
+      application = app(options[:id]) if application? options[:id]
+      #application = app(options[:id) if application? options[:id]
+
+      # step: do we have to convert the json
+      if options[:convert]
+        puts application.to_yaml
+      else
+        PP.pp application
+      end
+    end
+
+    def list
+      header = "%4s %-40s %-10s %-8s %-8s %-25s %-10s %-10s"
+      puts "#{header}\n\n" % %w(type id instances cpus mem version staged running)
+      unless options[:no_apps]
+        applications.each do |x|
+          puts header % [ 'app', x['id'], x['instances'], x['cpus'], x['mem'], x['version'], x['tasksStaged'], x['tasksRunning'] ]
+          running_tasks = x['tasksRunning'].to_i
+          if running_tasks > 0 and options[:long]
+            task_header = "\t\t%-20s %-10s %-10s %-25s"
+            puts task_header % %w(host ports health created)
+            application_tasks(x['id']).each do |task|
+              puts task_header % [ task['host'], task['ports'], 'passed', task['startedAt'] ]
+            end
+          end
+        end
+      end
+      unless options[:no_groups]
+        groups.each do |app_groups|
+          app_groups['groups'].each do |x|
+            x['apps'].each do |x|
+              puts header % [ 'grp', x['id'], x['instances'], x['cpus'], x['mem'], x['version'], x['tasksStaged'], x['tasksRunning'] ]
+            end
+          end
+        end
+      end
+    end
+
+    def create
+      verbose "Application creation, marathon: #{options[:marathon]}"
+      # step: check the arguments
+      validate_url options[:marathon]
+      validate_file options[:app]
+
+      # step: read in the application
+      application = load_application(options[:app])
+
+      # step: post the application
+      response = apps(application)
+      verbose "successfully create the application in marathon: #{response[:version]}"
+    end
+
+    def options
+      @options ||= default_options
+    end
+
+    def default_options
+      {
+        :marathon => ENV['MARATHON_HOST'] || '127.0.0.1',
+        :port     => '8080',
+        :verbose  => true,
+        :command  => nil,
+        :api      => {
+          :version => 'v2',
+          :apps    => 'apps',
+          :groups  => 'groups'
+        }
+      }
+    end
+
+    def load_application filename
+      verbose "loading the application: #{filename}"
+      case File.basename(filename)
+      when '.json'
+        JSON.parse(File.read(filename))
+      else
+        YAML.load(File.read(filename))
+      end
+    end
+
+    def parser
+      @parser ||= OptionScrapper::new do |o|
+        o.on('-H MARATHON_HOST', '--host MARATHON_HOST', "the url for the marathon host (defaults to #{options[:marathon]} or MARATHON_HOST)" ) do |x|
+          unless x =~ /^http[s]:\/\//
+            x = "http://#{x}"
+          end
+          options[:marathon] = x
+        end
+        o.on('-P PORT', '--port PORT', "the port marathon is runnin on (defaults to #{options[:port]})" ) { |x| options[:port] = x }
+        o.on('-v', '--verbose', "switch on verbose logging mode (defaults #{options[:verbose]})" ) { options[:verbose] = true }
+        o.command :push, "create / post a application/group to marathon" do
+          o.command_alias :p
+          o.on('-f FILE', '--file FILE', 'the file containing a yaml|json representation of the application') { |x| options[:app] = x }
+          o.on_command { options[:command] = :create }
+        end
+        o.command :cat, "retrieve the marathon application / group definition from marathon" do
+          o.on( '-I ID', '--id ID', 'the application or group application id' ) { |x| options[:id] = x }
+          o.on( '-y', '--yaml', 'convert the application definition to yaml' ) { |x| options[:convert] = true }
+          o.on_command { options[:command] = :cat }
+        end
+        o.command :list, "list all the applications and application groups running in marathon" do
+          o.command_alias :ls
+          o.on( '-l', '--long', "provide a long listing - i.e. extra details") { options[:long] = true }
+          o.on( '-a', "--apps", "list all only the application not groups") { options[:no_apps] = true }
+          o.on( '-g', "--groups", "list all only the application groups not applications") { options[:no_groups] = true }
+          o.on_command { options[:command] = :list }
+        end
+        o.command :convert, "convert the marathon json representation over to a yaml format" do
+          o.command_alias :cv
+          o.on('-f FILE', '--file FILE', 'the file containing a json representation of the application') { |x| options[:app] = x }
+          o.on_command { options[:command] = :convert }
+        end
+      end
+    end
+  end
+end
+
+Marathon::CLI::new

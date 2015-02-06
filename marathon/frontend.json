@@ -9,11 +9,22 @@
       "image": "quay.io/gambol99/apache-php:latest",
       "network": "BRIDGE",
       "portMappings": [
-        { "containerPort": 80,  "hostPort": 0, "protocol": "tcp" },
-        { "containerPort": 443, "hostPort": 0, "protocol": "tcp" }
+        { "containerPort": 80,  "hostPort": 0, "protocol": "tcp", "servicePort": 80 },
+        { "containerPort": 443, "hostPort": 0, "protocol": "tcp", "servicePort": 443 }
       ]
     }
   },
+  "healthChecks": [
+    {
+      "protocol": "HTTP",
+      "path": "/hostname.php",
+      "gracePeriodSeconds": 3,
+      "intervalSeconds": 10,
+      "portIndex": 0,
+      "timeoutSeconds": 10,
+      "maxConsecutiveFailures": 3
+    }
+  ],
   "args": [ "/usr/sbin/apache2ctl", "-D", "FOREGROUND" ],
   "env": {
     "NAME": "frontend",
