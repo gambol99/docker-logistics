@@ -25,6 +25,17 @@
               ]
             }
           },
+          "healthChecks": [
+            {
+              "protocol": "HTTP",
+              "path": "/hostname.php",
+              "gracePeriodSeconds": 3,
+              "intervalSeconds": 10,
+              "portIndex": 0,
+              "timeoutSeconds": 10,
+              "maxConsecutiveFailures": 3
+            }
+          ],
           "id": "apache",
           "mem": 64,
           "args": [],
@@ -52,6 +63,16 @@
               ]
             }
           },
+          "healthChecks": [
+            {
+              "portIndex": 0,
+              "protocol": "TCP",
+              "gracePeriodSeconds": 10,
+              "intervalSeconds": 10,
+              "timeoutSeconds": 5,
+              "maxConsecutiveFailures": 2
+            }
+          ],
           "id": "mysql",
           "mem": 1024,
           "cmd": "",
@@ -79,6 +100,16 @@
               ]
             }
           },
+          "healthChecks": [
+            {
+              "portIndex": 0,
+              "protocol": "TCP",
+              "gracePeriodSeconds": 10,
+              "intervalSeconds": 10,
+              "timeoutSeconds": 5,
+              "maxConsecutiveFailures": 2
+            }
+          ],
           "id": "caching",
           "cmd": "",
           "mem": 128,
