@@ -1,0 +1,30 @@
+#
+#   Author: Rohith (gambol99@gmail.com)
+#   Date: 2015-02-09 15:22:59 +0000 (Mon, 09 Feb 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+[Unit]
+Description=Serf Agent
+Requires=etcd.service
+Requires=docker.service
+Requires=config-fs.service
+After=etcd.service
+After=docker.service
+After=config-fs.service
+
+[Service]
+KillMode=none
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=5
+EnvironmentFile=/etc/environment
+ExecStartPre=-/usr/bin/docker kill serf
+ExecStartPre=-/usr/bin/docker rm serf
+ExecStartPre=/usr/bin/docker pull gambol99/serf
+ExecStart=/usr/bin/bash /config/env/prod/setups/serf.sh
+
+ExecStop=-/usr/bin/docker stop serf
+
+[X-Fleet]
+Global=true
