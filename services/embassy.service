@@ -34,6 +34,7 @@ gambol99/embassy \
 -provider=docker
 
 #-discovery=etcd://${COREOS_PRIVATE_IPV4}:4001 \
+#-discovery=marathon://${COREOS_PRIVATE_IPV4}:8080 \
 
 ExecStop=/usr/bin/docker stop embassy.proxy
 
