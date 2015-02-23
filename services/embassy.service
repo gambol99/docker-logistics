@@ -30,10 +30,11 @@ ExecStart=/usr/bin/docker run \
 -v /var/run/docker.sock:/var/run/docker.sock \
 gambol99/embassy \
 --dnat -v=3 -interface=eth0 \
--discovery=consul://${COREOS_PRIVATE_IPV4}:8500 \
+-discovery=marathon://${COREOS_PRIVATE_IPV4}:8080 \
 -provider=docker
 
 #-discovery=etcd://${COREOS_PRIVATE_IPV4}:4001 \
+#-discovery=consul://${COREOS_PRIVATE_IPV4}:8500
 #-discovery=marathon://${COREOS_PRIVATE_IPV4}:8080 \
 
 ExecStop=/usr/bin/docker stop embassy.proxy
