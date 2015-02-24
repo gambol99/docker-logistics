@@ -1,0 +1,206 @@
+#!/usr/bin/ruby
+#
+#   Author: Rohith (gambol99@gmail.com)
+#   Date: 2015-01-26 11:25:08 +0000 (Mon, 26 Jan 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+require 'optionscrapper'
+require 'pp'
+
+module FleetCtl
+  class Cli
+    def initialize
+      begin
+        if ENV['FLEETCTL_TUNNEL'].nil? and ENV['FLEETCTL_ENDPOINT'].nil?
+          raise ArgumentError, "you have to export either FLEETCTL_(ENDPOINT|TUNNEL) into your environment"
+        end
+        parser.parse!
+        send options[:action] if options[:action]
+      rescue ArgumentError => e
+        parser.usage(e.message)
+      end
+    end
+
+    private
+    def verbose message
+      puts "[v] %s" % [ message ] if options[:verbose]
+    end
+
+    def deploy
+      verbose "deploying the unit file: #{options[:unit]}"
+      validate_file options[:unit]
+      unit_status = status
+      unit        = options[:unit]
+      # is it doesnt exist, we can go straight to deployments
+      if !exists?(unit)
+        verbose "the unit does not exist, we can deploy straight"
+        start(unit)
+      else
+        if running?(unit)
+          verbose "the unit: #{unit} is already deployed and all running"
+          return
+        else
+          # are any of the dead?
+          if dead?(unit)
+            destroy(unit)
+            start(unit)
+          end
+        end
+      end
+      # deplay the status
+      list(unit)
+    end
+
+    def start(unit)
+      fleetctl("start #{unit}")
+      wait_until_running(unit)
+    end
+
+    def destroy(unit = options[:unit])
+      verbose "destroying the unit: #{unit}"
+      usage "you have not specified a unit to destroy" unless unit
+      fleetctl("destroy #{unit}")
+    end
+
+    def list(unit = nil)
+      unit_status = status(unit)
+      unit_status.keys.sort.each do |unit|
+        puts "[#{unit}]\n"
+        unit_status[unit].each do |x|
+          puts "%2s - %-20s %10s %10s" % [ "", x[:machine], x[:active], x[:status] ]
+        end
+      end
+    end
+
+    def wait_until_running(unit)
+      limit_unseen     = 10
+      limit_dead_count = 10
+      wait_for         = true
+      verbose "waiting for the unit: #{unit} to deploy"
+      print "["
+      start_time = Time.now
+      while wait_for do
+        sleep(options[:interval])
+        current_status = status
+        if running?(unit, current_status)
+          time_elasped = (Time.now - start_time)
+          puts "] time: %f seconds" % [ time_elasped ]
+          verbose "unit: #{unit} all running sucessfully in cluster"
+          return
+        elsif !exists?(unit, current_status)
+          wait_for = limit_unseen > 0
+          limit_unseen -= 1
+        elsif dead?(unit, current_status)
+          wait_for = limit_dead_count > 0
+          limit_dead_count -= 1
+        end
+        printf "="
+      end
+      verbose "unit: #{unit} failed to deploy in cluster"
+    end
+
+    def fleetctl(arguments)
+      @fleetctl ||= fleetctl_binary
+      output = execute("#{@fleetctl} #{arguments}") { |x| yield x if block_given? }
+      output
+    end
+
+    def fleetctl_binary
+      fleet_command = `which fleetctl`.chomp
+      raise ArgumentError, "unable to find the fleetctl binary in PATH, found: #{fleet_command}" unless File.executable? fleet_command
+      fleet_command
+    end
+
+    def execute(command)
+      result = `#{command}`
+      raise Exception, "failed to execute the command: #{command}, error: #{result}" if $?.exitstatus != 0
+      result.split("\n").each do |x|
+        yield x if block_given?
+      end
+      result
+    end
+
+    def deploying?(unit, current_status = status)
+      current_status = status[unit].select { |x| x[:status] =~ /pre-start|auto-restart/i }.size > 0
+    end
+
+    def exists?(unit, current_status = status)
+      !current_status[unit].nil?
+    end
+
+    def running?(unit, current_status = status)
+      return false if current_status[unit].nil?
+      (current_status[unit]).all? { |x| x[:status] == "running" }
+    end
+
+    def dead?(unit, current_status = status)
+      return true if current_status[unit].nil?
+      current_status[unit].select { |x| x[:status] =~ /(dead|failed|failed)/i }.size > 0
+    end
+
+    def status(unit = nil)
+      units = {}
+      fleetctl("list-units") do |status|
+        # parse the status line
+        elements = status.split(" ")
+        # construct the hash
+        units[elements[0]] ||= []
+        units[elements[0]] << {
+          :machine => elements[1],
+          :active  => elements[2],
+          :status  => elements[3],
+        }
+      end
+      if unit
+        return {} unless units[units]
+        return { unit => units[units] }
+      end
+      units
+    end
+
+    def options
+      @options ||= default_options
+    end
+
+    def default_options
+      {
+        :verbose  => true,
+        :interval => 2
+      }
+    end
+
+    def validate_file filename
+      usage "the file: #{filename} does not exists" unless File.exist? filename
+      usage "the file: #{filename} is not a file"   unless File.file? filename
+      usage "the file: #{filename} is not readable" unless File.readable? filename
+      filename
+    end
+
+    def parser
+      @parser ||= OptionScrapper::new do |o|
+        o.on('-t TIMEOUT', '--timeout TIMEOUT', 'the timeout in seconds to wait for fleet deployments')
+        o.command :deploy, 'deploy a unit file to the fleet cluster' do
+          o.command_alias :dp
+          o.on('-u FILE', '--unit FILE', 'the fleet unit file you wish to deploy') { |x| options[:unit] = x }
+          o.on_command { options[:action] = :deploy }
+        end
+        o.command :destroy, 'destroy a unit from the cluster' do
+          o.command_alias :ds
+          o.on('-u FILE', '--unit FILE', 'the fleet unit file you wish to destroy') { |x| options[:unit] = x }
+          o.on_command { options[:action] = :destroy }
+        end
+        o.command :list, 'list all the units in the cluster' do
+          o.command_alias :ls
+          o.on_command { options[:action] = :list }
+        end
+      end
+    end
+
+    def usage message
+      raise ArgumentError, message
+    end
+  end
+end
+
+FleetCtl::Cli.new
