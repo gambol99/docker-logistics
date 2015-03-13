@@ -12,8 +12,6 @@ require 'optionscrapper'
 require 'uri'
 require 'pp'
 
-# Note, this is quick and dirty
-
 module Marathon
   module Utils
     def validate_file filename
@@ -44,44 +42,46 @@ module Marathon
     VERSION = "v2"
     DEFAULT_TIMEOUT = 10
 
-    def apps application
-      id = application['id']
-      verbose "Checking if the application: #{id} already exists"
-      if application? id
-        verbose "Application: #{id} already exists, updating instead"
-        unmarshall(put( "%s/apps" % [ endpoint ], application ))
-      else
-        verbose "Pushing a new application: #{id}"
-        unmarshall(post( "%s/apps" % [ endpoint ], application ))
+    def create_application(application)
+      is_app = application['groups'].nil?
+      url = ( is_app ) ? applications_endpoint : groups_endpoint
+      resource = "#{url}/#{application['id']}"
+      method   = :post
+      if exists?(resource)
+        method = :put
+        url    = resource
       end
+      method = (exists?(resource)) ? :put : :post
+      verbose "URL: #{url}, Method: #{method.upcase}"
+      verbose "Deploying | Updating the application: #{application['id']}" if is_app
+      verbose "Deploying | Updating the group: #{application['id']}"       unless is_app
+      unmarshall(send(method.to_sym, url, application))
     end
 
-    def groups application
-      id = application['id']
-      verbose "Checking for the application group: #{id} exists"
-      if group? id
-        verbose "Application Group: #{id} already exists, updating the group instead"
-        unmarshall(put( "%s/groups" % [ endpoint ], application ))
-      else
-        verbose "Creating a new application frp"
-        unmarshall(post( "%s/groups" % [ endpoint ], application ))
+    def destroy_application(application)
+      is_app = application['groups'].nil?
+      url = ( is_app ) ? applications_endpoint : groups_endpoint
+      url = url << "/#{application['id']}"
+      unless application?(application['id'])
+        verbose "The application|group: #{application['id']} does not exist"
+        return
       end
+      unmarshall(delete(url))
     end
 
-    def application_tasks id
-      raise ArgumentError, "the application: #{id} does not exists" unless application? application
-      (unmarshall(get( "%s/apps/%s/tasks" % [ endpoint, id ] )) || {})['tasks'] || []
+    def tasks(id)
+      raise ArgumentError, "the application: #{id} does not exists" unless application?(id)
+      (unmarshall(get( "%s/apps%s/tasks" % [ endpoint, id ] )) || {})['tasks'] || []
     end
 
-    def app id
-      raise "the application: #{id} does not exists" unless application? id
+    def app(id)
+      raise "the application: #{id} does not exists" unless application?(id)
       unmarshall(get( "%s/apps/%s" % [ endpoint, id ] ))['app']
     end
 
-    def application? id
-      !applications.select { |x|
-        x['id'] == id
-      }.empty?
+    def application?(id)
+      url = "%s/%s" % [ applications_endpoint, id['id']]
+      exists?(url)
     end
 
     def applications
@@ -103,6 +103,14 @@ module Marathon
       JSON.parse(response.body) if response.body
     end
 
+    def applications_endpoint
+      "%s/apps" % [ endpoint ]
+    end
+
+    def groups_endpoint
+      "%s/groups" % [ endpoint ]
+    end
+
     def endpoint
       "%s:%s/%s" % [ options[:marathon], options[:port], VERSION ]
     end
@@ -119,21 +127,37 @@ module Marathon
       http_request(:get, url, {})
     end
 
-    def delete(url,data)
+    def delete(url)
       http_request(:delete, url, {})
     end
 
-    def http_request(method, url, options)
-      response = HTTParty.send(method, url, default_headers.merge(options))
-      if response.code < 200 || response.code >= 300
-        raise ArgumentError, "invalid reply, response: #{response}"
+    def exists?(url)
+      request(:get, url, {}) do |response, code|
+        ( code == 404 ) ? false : true
       end
-      response
+    end
+
+    def http_request(method, url, opts)
+      opts.merge!(default_headers)
+      request(method, url, opts) do |response,code|
+        if response.code < 200 || response.code >= 300
+          raise ArgumentError, "invalid reply, response: #{response}"
+        end
+        response
+      end
+    end
+
+    def request(method, url, opts, &block)
+      response = HTTParty.send(method, url, opts)
+      yield response, response.code if block_given?
     end
 
     def default_headers
       {
-        :headers => { 'Content-Type' => 'application/json' },
+        :headers => {
+          'Content-Type' => 'application/json',
+          'Accept'       => 'application/json'
+        },
         :timeout => DEFAULT_TIMEOUT
       }
     end
@@ -167,7 +191,6 @@ module Marathon
       usage "you must specific an application / group application id to retrieve" unless options[:id]
       application = nil
       application = app(options[:id]) if application? options[:id]
-      #application = app(options[:id) if application? options[:id]
 
       # step: do we have to convert the json
       if options[:convert]
@@ -187,7 +210,7 @@ module Marathon
           if running_tasks > 0 and options[:long]
             task_header = "\t\t%-20s %-10s %-10s %-25s"
             puts task_header % %w(host ports health created)
-            application_tasks(x['id']).each do |task|
+            tasks(x['id']).each do |task|
               puts task_header % [ task['host'], task['ports'], 'passed', task['startedAt'] ]
             end
           end
@@ -204,18 +227,16 @@ module Marathon
       end
     end
 
-    def create
-      verbose "Application creation, marathon: #{options[:marathon]}"
-      # step: check the arguments
-      validate_url options[:marathon]
-      validate_file options[:app]
-
-      # step: read in the application
-      application = load_application(options[:app])
-
-      # step: post the application
-      response = apps(application)
-      verbose "successfully create the application in marathon: #{response[:version]}"
+    %w(create destroy).each do |x|
+      define_method x.to_sym do
+        # step: check the arguments
+        validate_url options[:marathon]
+        validate_file options[:app]
+        # step: read in the application
+        application = load_application(options[:app])
+        send("#{x}_application".to_sym, application)
+        verbose "The application: #{application['id]']} has been successfully #{x}ed"
+      end
     end
 
     def options
@@ -260,6 +281,10 @@ module Marathon
           o.command_alias :p
           o.on('-f FILE', '--file FILE', 'the file containing a yaml|json representation of the application') { |x| options[:app] = x }
           o.on_command { options[:command] = :create }
+        end
+        o.command :destroy, "delete an application or group from marathon" do
+          o.on('-f FILE', '--file FILE', 'the file containing a yaml|json representation of the application') { |x| options[:app] = x }
+          o.on_command { options[:command] = :destroy }
         end
         o.command :cat, "retrieve the marathon application / group definition from marathon" do
           o.on( '-I ID', '--id ID', 'the application or group application id' ) { |x| options[:id] = x }

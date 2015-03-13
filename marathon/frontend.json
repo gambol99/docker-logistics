@@ -1,6 +1,6 @@
 {
   "id": "/product/web/frontend",
-  "instances": 3,
+  "instances": 4,
   "mem": 64,
   "cpus": 0.2,
   "container": {
@@ -16,13 +16,12 @@
   },
   "healthChecks": [
     {
-      "protocol": "HTTP",
-      "path": "/hostname.php",
-      "gracePeriodSeconds": 3,
+      "portIndex": 1,
+      "protocol": "TCP",
+      "gracePeriodSeconds": 10,
       "intervalSeconds": 10,
-      "portIndex": 0,
-      "timeoutSeconds": 10,
-      "maxConsecutiveFailures": 3
+      "timeoutSeconds": 5,
+      "maxConsecutiveFailures": 2
     }
   ],
   "args": [ "/usr/sbin/apache2ctl", "-D", "FOREGROUND" ],
