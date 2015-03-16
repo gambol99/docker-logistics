@@ -11,6 +11,7 @@ require 'yaml'
 require 'optionscrapper'
 require 'uri'
 require 'pp'
+require 'erb'
 
 module Marathon
   module Utils
@@ -163,6 +164,18 @@ module Marathon
     end
   end
 
+  class Render
+    def initialize(scope = {})
+      scope.each_pair do |k,v|
+        self.instance_variable_set("@#{k}", v)
+      end
+    end
+
+    def render(template = "")
+      ERB.new(template, nil, '-').result(binding)
+    end
+  end
+
   class CLI
     include Marathon::Utils
     include Marathon::Logging
@@ -234,8 +247,12 @@ module Marathon
         validate_file options[:app]
         # step: read in the application
         application = load_application(options[:app])
-        send("#{x}_application".to_sym, application)
-        verbose "The application: #{application['id]']} has been successfully #{x}ed"
+        if options[:dry].nil?
+          send("#{x}_application".to_sym, application)
+          verbose "The application: #{application['id]']} has been successfully #{x}ed"
+        else
+          PP.pp application
+        end
       end
     end
 
@@ -249,6 +266,7 @@ module Marathon
         :port     => '8080',
         :verbose  => true,
         :command  => nil,
+        :scope    => {},
         :api      => {
           :version => 'v2',
           :apps    => 'apps',
@@ -259,9 +277,13 @@ module Marathon
 
     def load_application filename
       verbose "loading the application: #{filename}"
-      case File.basename(filename)
+      case File.extname(filename)
       when '.json'
         JSON.parse(File.read(filename))
+      when '.erb'
+        templete = File.read(filename)
+        renderer = Render.new(options[:scope])
+        JSON.parse(renderer.render(templete))
       else
         YAML.load(File.read(filename))
       end
@@ -275,11 +297,17 @@ module Marathon
           end
           options[:marathon] = x
         end
+        o.on('-s KEYPAIR', '--scope KEYPAIR', "add a a key/pair to the scope") do |x|
+          elements = x.split("=")
+          raise ArgumentError, "invalid key pair passed to scope options, should be KEY=VALUE" if elements.size != 2
+          options[:scope][elements.first] = elements.last
+        end
         o.on('-P PORT', '--port PORT', "the port marathon is runnin on (defaults to #{options[:port]})" ) { |x| options[:port] = x }
         o.on('-v', '--verbose', "switch on verbose logging mode (defaults #{options[:verbose]})" ) { options[:verbose] = true }
         o.command :push, "create / post a application/group to marathon" do
           o.command_alias :p
           o.on('-f FILE', '--file FILE', 'the file containing a yaml|json representation of the application') { |x| options[:app] = x }
+          o.on(nil, '--dry', 'perform a dry run') { options[:dry] = true }
           o.on_command { options[:command] = :create }
         end
         o.command :destroy, "delete an application or group from marathon" do

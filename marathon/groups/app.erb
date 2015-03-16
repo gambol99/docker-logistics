@@ -1,15 +1,10 @@
 {
-  "id": "/qa/product/1",
+  "id": "/qa/product/<%= @instance %>",
   "groups": [
     {
       "id": "frontend",
       "apps": [
         {
-          "id": "apache",
-          "mem": 64,
-          "cpus": 0.2,
-          "args": [],
-          "instances": 4,
           "container": {
             "type": "DOCKER",
             "docker": {
@@ -40,23 +35,59 @@
               "maxConsecutiveFailures": 3
             }
           ],
+          "id": "apache",
+          "mem": 64,
+          "args": [],
           "env": {
-            "ENVIRONMENT": "qa",
             "NAME": "frontend",
-            "SERVICE_80_NAME": "apache_http",
-            "SERVICE_443_NAME": "apache_https",
-            "BACKEND_CACHE": "redis;6379",
-            "BACKEND_GRAPHITE": "graphite;2003",
-            "BACKEND_STATSD": "statsd;8125",
-            "BACKEND_MYSQL_MASTER": "mysql;3306"
+            "ENVIRONMENT": "qa",
+            "SERVICE_80_NAME": "apache_http_qa_<%= @instance %>",
+            "SERVICE_443_NAME": "apache_https_qa_<%= @instance %>",
+            "BACKEND_MYSQL_MASTER": "mysql_qa_<%= @instance %>;3306",
+            "BACKEND_CACHE": "redis_qa_<%= @instance %>;6379",
+            "BACKEND_GRAPHITE": "graphite_qa_<%= @instance %>;2003"
           },
           "dependencies": [
-            "/qa/product/1/database",
-            "/qa/product/1/caching",
-            "/qa/product/1/graphite"
+            "/qa/product/<%= @instance %>/database",
+            "/qa/product/<%= @instance %>/caching",
+            "/qa/product/<%= @instance %>/graphite"
+
           ]
-        },
-        {
+        },{
+          "id": "database",
+          "container": {
+            "type": "DOCKER",
+            "docker": {
+              "image": "tutum/mysql",
+              "network": "BRIDGE",
+              "portMappings": [
+                { "containerPort": 3306, "hostPort": 0, "protocol": "tcp" }
+              ]
+            }
+          },
+          "healthChecks": [
+            {
+              "portIndex": 0,
+              "protocol": "TCP",
+              "gracePeriodSeconds": 10,
+              "intervalSeconds": 10,
+              "timeoutSeconds": 5,
+              "maxConsecutiveFailures": 2
+            }
+          ],
+          "id": "mysql",
+          "mem": 1024,
+          "cmd": "",
+          "env": {
+            "ENVIRONMENT": "qa",
+            "SERVICE_NAME": "dbmaster",
+            "SERVICE_3306_NAME": "mysql_qa_<%= @instance %>",
+            "MYSQL_PASS": "mysql",
+            "REPLICATION_MASTER": "true",
+            "REPLICATION_USER": "replication",
+            "REPLICATION_PASS": "8d67as9f7sjhsdfsd"
+          }
+        },{
           "container": {
             "type": "DOCKER",
             "docker": {
@@ -86,42 +117,7 @@
           "mem": 128,
           "env": {
             "ENVIRONMENT": "qa",
-            "SERVICE_6379_NAME": "redis"
-          }
-        },
-        {
-          "id": "database",
-          "container": {
-            "type": "DOCKER",
-            "docker": {
-              "image": "tutum/mysql",
-              "network": "BRIDGE",
-              "portMappings": [
-                { "containerPort": 3306, "hostPort": 0, "protocol": "tcp" }
-              ]
-            }
-          },
-          "healthChecks": [
-            {
-              "portIndex": 0,
-              "protocol": "TCP",
-              "gracePeriodSeconds": 10,
-              "intervalSeconds": 10,
-              "timeoutSeconds": 5,
-              "maxConsecutiveFailures": 2
-            }
-          ],
-          "id": "mysql",
-          "mem": 1024,
-          "cmd": "",
-          "env": {
-            "ENVIRONMENT": "qa",
-            "SERVICE_NAME": "dbmaster",
-            "SERVICE_3306_NAME": "mysql",
-            "MYSQL_PASS": "mysql",
-            "REPLICATION_MASTER": "true",
-            "REPLICATION_USER": "replication",
-            "REPLICATION_PASS": "8d67as9f7sjhsdfsd"
+            "SERVICE_6379_NAME": "redis_qa_<%= @instance %>"
           }
         },
         {
@@ -172,9 +168,9 @@
           "mem": 128,
           "env": {
             "ENVIRONMENT": "qa",
-            "SERVICE_80_NAME": "graphite_http",
-            "SERVICE_2003_NAME": "graphite",
-            "SERVICE_8125_NAME": "statsd"
+            "SERVICE_80_NAME": "graphite_http_qa_<%= @instance %>",
+            "SERVICE_2003_NAME": "graphite_qa_<%= @instance %>",
+            "SERVICE_8125_NAME": "statsd_qa_<%= @instance %>"
           }
         }
       ]
