@@ -1,0 +1,48 @@
+#
+#   Author: Rohith
+#   Date: 2015-05-20 23:36:02 +0100 (Wed, 20 May 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: gitlab-web
+spec:
+  replicas: 1
+  selector:
+    name: gitlab-web
+  template:
+    metadata:
+      labels:
+        name: gitlab-web
+    spec:
+      containers:
+      - name: gitlab-web
+        image: sameersbn/gitlab:latest
+        ports:
+        - containerPort: 80
+        - containerPort: 22
+        - containerPort: 443
+        env:
+        - name: TERM 
+          value: linux
+        - name: DEBIAN_FRONTEND
+          value: noninteractive
+        - name: DB_TYPE
+          value: mysql
+        - name: DB_HOST
+          value: 10.99.231.138
+        - name: DB_NAME
+          value: gitlabhq
+        - name: DB_USER
+          value: admin
+        - name: DB_PASS
+          value: dfdsmfk983w
+        - name: REDIS_HOST
+          value: 10.99.239.150
+        - name: REDIS_PORT
+          value: "6379"
+

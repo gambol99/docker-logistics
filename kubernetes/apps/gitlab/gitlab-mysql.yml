@@ -1,0 +1,37 @@
+#
+#   Author: Rohith
+#   Date: 2015-05-20 23:36:09 +0100 (Wed, 20 May 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: gitlab-mysql
+spec:
+  replicas: 1
+  selector:
+    name: gitlab-mysql
+  template:
+    metadata:
+      labels:
+        name: gitlab-mysql
+    spec:
+      containers:
+      - name: gitlab-mysql
+        image: tutum/mysql
+        ports:
+        - containerPort: 3306
+        env:
+        - name: SERVICE_3306_NAME
+          value: gitlabs-mysql
+        - name: MYSQL_PASS
+          value: dfdsmfk983w
+        - name: REPLICATION_MASTER
+          value: "true"
+        - name: REPLICATION_USER
+          value: replication
+        - name: REPLICATION_PASS
+          value: d67as9f7sjhsdfsd

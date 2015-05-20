@@ -1,0 +1,25 @@
+#
+#   Author: Rohith
+#   Date: 2015-05-20 23:35:59 +0100 (Wed, 20 May 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+
+apiVersion: v1beta3
+kind: Service
+metadata:
+  labels:
+    name: gitlab-web
+    project: gitlab
+    role: service
+  name: gitlab-web
+spec:
+  publicips:
+  - 10.250.1.201
+  - 10.250.1.202
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    name: gitlab-web
