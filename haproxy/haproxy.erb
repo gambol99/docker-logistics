@@ -1,0 +1,95 @@
+#
+#   Author: Rohith
+#   Date: <%= Time.now %>
+#
+#  vim:ts=2:sw=2:et
+#
+<%-
+  def env(option)
+    ENV[option]
+  end
+
+  def opt(option, default)
+    name = "HAPROXY_#{option}"
+    ( env(name) .nil? ) ? default : env(name)
+  end
+
+  stats_enabled = opt('STATS', 'true')
+  stats_user    = opt('USERNAME', 'admin')
+  stats_pass    = opt('PASSWORD', 'dks9d921jdsd3qwd')
+  enabled_tcp_frontends  = @frontends.select { |x| x['state'] == "enabled" and x['type'] == 'tcp'  }
+  enabled_http_frontends = @frontends.select { |x| x['state'] == "enabled" and x['type'] == 'http' }
+-%>
+
+global
+  user haproxy
+  group haproxy
+
+defaults
+  log global
+  balance roundrobin
+  timeout connect <%= opt('TIMEOUT_CONNECT', '5s' ) %>
+  timeout client <%= opt('TIMEOUT_CLIENT', '50s' ) %>
+  timeout server <%= opt('TIMEOUT_SERVER', '50s' ) %>
+
+<%- if stats_enabled == 'true' -%>
+listen stats
+  bind *:8001
+  mode http
+  option httpclose
+  option forwardfor
+  stats enable
+  stats uri /haproxy?stats
+  stats auth <%= stats_user %>:<%= stats_pass %>
+  stats realm HAProxy\ Statistics
+<%- end -%>
+
+#
+# TCP Frontend Services
+#
+<%- enabled_tcp_frontends.each do |fe|
+  # step: get the haproxy options and the service options
+  metadata = fe['metadata'] || {}
+  haproxy_options = metadata['haproxy'] || {}
+  service_options = metadata['service_options'] || {}
+  backends = @backends.select { |x| x['name'] == fe['name'] }
+-%>
+frontend <%= fe['name'] %>
+  bind <%= opt('BIND','*') %>:<%= fe['port'] %>
+  mode tcp
+  default_backend <%= fe['name'] %>
+
+<%- if backends.nil? or backends.empty? -%>
+## NO BACKENDS for frontend '<%= fe['name'] %>'
+<%-   next
+    end -%>
+backend <%= fe['name'] %>
+  mode tcp
+  <%- haproxy_options.each_pair do |option,value| -%>
+  <%= option %> <%= value %>
+  <%- end -%>
+  <%- backends.each do |be| -%>
+  server <%= be['ip'] %>_<%= be['port'] %> <%= be['ip'] %>:<%= be['port'] %> check
+  <%- end -%>
+<%- end -%>
+
+#
+# HTTP Frontend Services
+#
+<%- enabled_tcp_frontends.each do |fe|
+  # step: get the haproxy options and the service options
+  metadata = fe['metadata'] || {}
+  haproxy_options = metadata['haproxy'] || {}
+  service_options = metadata['service_options'] || {}
+  backends = @backends.select { |x| x['name'] == fe['name'] }
+-%>
+frontend <%= fe['name'] %>
+  bind <%= opt('BIND','*') %>:<%= fe['port'] %>
+  mode http
+
+backend <%= fe['name'] %>
+  <%- haproxy_options.each_pair do |option,value| -%>
+  <%= option %> <%= value %>
+  <%- end -%>
+
+<%- end -%>

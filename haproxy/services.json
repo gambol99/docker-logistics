@@ -1,0 +1,99 @@
+{
+   "frontends" : [
+    {
+      "name": "gitlabs-ssh",
+      "type": "tcp",
+      "port": 80,
+      "state": "enabled",
+      "network": "public",
+      "backends": "/services/gitlabs-ssh",
+      "metadata": {
+        "haproxy": {
+          "balancer" : "leastconn"
+        },
+        "service_options": {
+          "vhost" : "gitlabs.dev.hod.gov.uk"
+        }
+      }
+    },
+    {
+      "name": "gitlabs-https",
+      "type": "http",
+      "port": 80,
+      "state": "enabled",
+      "network": "public",
+      "backends": "/services/gitlabs-ssh",
+      "metadata": {
+        "haproxy": {
+          "balancer" : "leastconn"
+        },
+        "service_options": {
+          "vhost" : "gitlabs.dev.hod.gov.uk"
+        }
+      }
+    }
+   ],
+   "backends" : [
+      {
+        "id": "ef61959fbf73",
+        "name": "gitlabs-ssh",
+        "port": 31001,
+        "ip": "10.7.20.31",
+        "tags": [],
+        "attrs": {
+          "image": "be4a548cb0693fd94f42"
+        },
+        "ttl": 0,
+        "origin": {
+          "HostPort": "31001",
+          "HostIP": "10.7.20.31",
+          "ExposedPort": "443",
+          "ExposedIP": "172.17.3.50",
+          "PortType": "tcp",
+          "ContainerHostname": "52b80b480f3e",
+          "ContainerID": "52b80b480f3ec16"
+        }
+      },
+      {
+        "id": "ef61959fbfdsd",
+        "name": "gitlabs-ssh",
+        "port": 31001,
+        "ip": "10.7.20.34",
+        "tags": [],
+        "attrs": {
+          "image": "be4a548cb0693fd94f42"
+        },
+        "ttl": 0,
+        "origin": {
+          "HostPort": "31001",
+          "HostIP": "10.7.20.31",
+          "ExposedPort": "443",
+          "ExposedIP": "172.17.3.50",
+          "PortType": "tcp",
+          "ContainerHostname": "52b80b480f3e",
+          "ContainerID": "52b80b480f3ec16"
+        }
+      },
+      {
+        "id": "ef61959fbf74",
+        "name": "gitlabs-https",
+        "port": 31001,
+        "ip": "10.7.20.33",
+        "tags": [],
+        "attrs": {
+          "image": "be4a548cb0693fd94f42"
+        },
+        "ttl": 0,
+        "origin": {
+          "HostPort": "31001",
+          "HostIP": "10.7.20.31",
+          "ExposedPort": "443",
+          "ExposedIP": "172.17.3.50",
+          "PortType": "tcp",
+          "ContainerHostname": "52b80b480f3e",
+          "ContainerID": "52b80b480f3ec16"
+        }
+      }
+   ]
+}
+

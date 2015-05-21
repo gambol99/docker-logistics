@@ -1,0 +1,91 @@
+#!/usr/bin/ruby
+#
+#   Author: Rohith
+#   Date: 2015-04-29 15:44:00 +0100 (Wed, 29 Apr 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+$:.unshift File.join(File.dirname(__FILE__),'.','.')
+require 'json'
+require 'optionscrapper'
+require 'erb'
+
+ROOT = File.expand_path File.dirname __FILE__
+
+module HAProxyConfig
+  class CLI
+    def initialize
+      begin
+        parser.parse!
+        generate_config
+      rescue SystemExit => e
+        exit e.status
+      rescue Exception => e
+        parser.usage e.message
+      end
+    end
+
+    private
+    def generate_config(filename = options[:config])
+      # step: validate the configuration
+      config = validate_config(filename)
+      # step: normalize the model
+      @frontends = normalize_frontends(config[options[:ns_frontends]])
+      @backends  = normalize_backends(config[options[:ns_backends]])
+      # step: generate from the template
+      configuration = ERB.new(File.read(validate_file(options[:template])), nil, '-' ).result( binding )
+      puts configuration
+    end
+
+    def validate_config(filename = options[:config])
+      parse_services(validate_file(filename))
+    end
+
+    def normalize_frontends(frontends = {})
+      frontends
+    end
+
+    def normalize_backends(backends = {})
+      backends
+    end
+
+    def parse_services(filename)
+      @services ||= JSON.parse(File.read(filename))
+    end
+
+
+    def validate_file(filename)
+      raise Exception, "you have not specified a file to check" unless filename
+      raise Exception, "the file: #{filename} does not exist" unless File.exist?(filename)
+      raise Exception, "the file: #{filename} is not a file" unless File.file?(filename)
+      raise Exception, "the file: #{filename} is not readable" unless File.readable?(filename)
+      filename
+    end
+
+    def options
+      @options ||= default_options
+    end
+
+    def default_options
+      {
+        :ns_backends  => 'backends',
+        :ns_frontends => 'frontends',
+        :config       => "#{ROOT}/services.json",
+        :template     => "#{ROOT}/haproxy.erb",
+      }
+    end
+
+    def parser
+      @parser ||= ::OptionScrapper.new do |o|
+        o.on('-c CONFIG', '--config CONFIG', 'the configuration file container services') { |x| options[:config] = x }
+        o.on('-F NS', '--frontend-namespace NS', 'the frontend namespace in the services document') { |x| options[:ns_frontends] = x }
+        o.on('-B NS', '--backend-namespace NS', 'the backend namespace in the services document') { |x| options[:ns_backends] = x }
+        o.on('-t TEMPLATE', '--template TEMPLATE', 'the path to the template to generate the configuration from' ) { |x| options[:template] = x }
+      end
+    end
+
+  end
+end
+
+HAProxyConfig::CLI.new
