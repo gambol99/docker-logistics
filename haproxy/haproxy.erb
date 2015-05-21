@@ -19,6 +19,7 @@
   stats_pass    = opt('PASSWORD', 'dks9d921jdsd3qwd')
   enabled_tcp_frontends  = @frontends.select { |x| x['state'] == "enabled" and x['type'] == 'tcp'  }
   enabled_http_frontends = @frontends.select { |x| x['state'] == "enabled" and x['type'] == 'http' }
+  shared_http_frontends  = {} 
 -%>
 
 global
@@ -76,12 +77,16 @@ backend <%= fe['name'] %>
 #
 # HTTP Frontend Services
 #
-<%- enabled_tcp_frontends.each do |fe|
+<%- enabled_http_frontends.each do |fe|
+  name = fe['name']
   # step: get the haproxy options and the service options
   metadata = fe['metadata'] || {}
   haproxy_options = metadata['haproxy'] || {}
   service_options = metadata['service_options'] || {}
   backends = @backends.select { |x| x['name'] == fe['name'] }
+  # step: is this frontend being shared? is has to flatten
+  shared = enabled_http_frontends.select { |x| x['port'] == fe['port'] }.size
+  if shared == 1
 -%>
 frontend <%= fe['name'] %>
   bind <%= opt('BIND','*') %>:<%= fe['port'] %>
@@ -91,5 +96,31 @@ backend <%= fe['name'] %>
   <%- haproxy_options.each_pair do |option,value| -%>
   <%= option %> <%= value %>
   <%- end -%>
+  <%- backends.each do |be| -%>
+  server <%= be['ip'] %>_<%= be['port'] %> <%= be['ip'] %>:<%= be['port'] %> check
+  <%- end -%>
+<%- else 
+  shared_http_frontends[name] ||= {}
+  shared_http_frontends[name]['vhosts'] ||= []
+  shared_http_frontends[name]['vhosts'] << service_options['vhost']  
+    end -%>
 
 <%- end -%>
+
+#
+# Shared HTTP Frontend Services
+#
+<%- shared_http_frontends.each_pair do |name,fe| 
+  backends = @backends.select { |x| x['name'] == fe['name'] }
+-%>
+frontend <%= name %>
+  bind <%= opt('BIND','*') %>:<%= fe['port'] %>
+  mode http
+<%- fe['vhosts'].each do |vhost| -%>
+  acl <%= vhost.gsub(/\./,'_') %> hdr(host) -i <%= vhost %>
+<%- end -%>  
+<%- fe['vhosts'].each do |vhost| -%>
+  use_backend <%= name %> if <%= vhost.gsub(/\./,'_') %>
+<%- end -%>  
+<%- end -%>
+
