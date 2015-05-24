@@ -1,0 +1,35 @@
+#
+#   Author: Rohith
+#   Date: 2015-05-24 15:48:29 +0100 (Sun, 24 May 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: artifactory
+spec:
+  replicas: 1
+  selector:
+    name: artifactory
+  template:
+    metadata:
+      labels:
+        name: artifactory
+    spec:
+      containers:
+      - name: artifacroy
+        image: otechlabs/artifactory
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+          - mountPath: /opt/artifactory
+            name: artifactory
+      volumes:
+        - name: artifactory
+          glusterfs: 
+            endpoints: glusterfs-cluster
+            path: artifactory
+            readOnly: false

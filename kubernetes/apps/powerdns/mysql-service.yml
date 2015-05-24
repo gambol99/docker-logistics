@@ -1,0 +1,23 @@
+#
+#   Author: Rohith
+#   Date: 2015-05-20 23:36:07 +0100 (Wed, 20 May 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+
+apiVersion: v1beta3
+kind: Service
+metadata:
+  labels:
+    name: gitlab-mysql
+    project: gitlab
+    role: service
+  name: gitlab-mysql
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    name: gitlab-mysql
+

@@ -1,0 +1,24 @@
+#
+#   Author: Rohith
+#   Date: 2015-05-24 15:48:32 +0100 (Sun, 24 May 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+
+apiVersion: v1beta3
+kind: Service
+metadata:
+  labels:
+    name: artifactory
+    project: artifactory
+    role: service
+  name: artifactory
+  annotations:
+    http_router: "{\"hosts\": [{\"host\": \"artifactory.sbx.hod.gov.uk\", \"port\": \"80\"}]}"
+spec:
+  ports:
+    - port: 80
+      targetPort: 8081
+  selector:
+    name: artifactory

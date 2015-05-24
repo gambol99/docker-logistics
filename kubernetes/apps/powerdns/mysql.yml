@@ -9,18 +9,19 @@
 apiVersion: v1beta3
 kind: ReplicationController
 metadata:
-  name: gitlab-mysql
+  name: powerdns-mysql
 spec:
   replicas: 1
   selector:
-    name: gitlab-mysql
+    name: powerdns-mysql
   template:
     metadata:
       labels:
-        name: gitlab-mysql
+        name: powerdns-mysql
+        project: powerdns
     spec:
       containers:
-      - name: gitlab-mysql
+      - name: powerdns-mysql
         image: tutum/mysql
         volumeMounts:
           - mountPath: /var/lib/mysql
@@ -42,5 +43,5 @@ spec:
         - name: glusterfs
           glusterfs: 
             endpoints: glusterfs-cluster
-            path: default
+            path: powerdns-mysql
             readOnly: false

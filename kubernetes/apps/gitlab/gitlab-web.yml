@@ -26,6 +26,12 @@ spec:
         - containerPort: 80
         - containerPort: 22
         - containerPort: 443
+        volumeMounts:
+          - mountPath: /var/log/gitlag
+            name: gitlab-logs
+        volumeMounts:
+          - mountPath: /home/git/data
+            name: gitlab-data
         env:
         - name: TERM 
           value: linux
@@ -34,7 +40,7 @@ spec:
         - name: DB_TYPE
           value: mysql
         - name: DB_HOST
-          value: 10.99.231.138
+          value: 10.99.107.246
         - name: DB_NAME
           value: gitlabhq
         - name: DB_USER
@@ -42,7 +48,20 @@ spec:
         - name: DB_PASS
           value: dfdsmfk983w
         - name: REDIS_HOST
-          value: 10.99.239.150
+          value: 10.99.163.194
+        - name: GITLAB_HOST
+          value: gitlabs.sbx.hod.gov.uk
         - name: REDIS_PORT
           value: "6379"
+      volumes:
+        - name: gitlab-logs
+          glusterfs: 
+            endpoints: glusterfs-cluster
+            path: gitlab-logs
+            readOnly: false
+        - name: gitlab-data
+          glusterfs: 
+            endpoints: glusterfs-cluster
+            path: gitlab-data
+            readOnly: false
 
