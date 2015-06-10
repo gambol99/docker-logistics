@@ -1,0 +1,31 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-10 18:10:53 +0100 (Wed, 10 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: jira-postgres
+spec:
+  replicas: 1
+  selector:
+    name: jira-postgres
+  template:
+    metadata:
+      labels:
+        name: jira-postgres
+    spec:
+      containers:
+      - name: jira-postgres
+        image: postgres:9.4
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: dfdsmfk983w

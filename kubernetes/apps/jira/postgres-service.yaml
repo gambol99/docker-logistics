@@ -1,0 +1,23 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-10 18:10:57 +0100 (Wed, 10 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+
+apiVersion: v1beta3
+kind: Service
+metadata:
+  labels:
+    name: jira-postgres
+    project: jira
+    role: service
+  name: jira-postgres
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    name: jira-postgres
+

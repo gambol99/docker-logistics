@@ -22,9 +22,6 @@ spec:
       containers:
       - name: gitlab-mysql
         image: tutum/mysql
-        volumeMounts:
-          - mountPath: /var/lib/mysql
-            name: glusterfs
         ports:
         - containerPort: 3306
         env:
@@ -38,9 +35,3 @@ spec:
           value: replication
         - name: REPLICATION_PASS
           value: d67as9f7sjhsdfsd
-      volumes:
-        - name: glusterfs
-          glusterfs: 
-            endpoints: glusterfs-cluster
-            path: default
-            readOnly: false

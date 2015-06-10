@@ -15,10 +15,11 @@ metadata:
     role: service
   name: gitlab-web
   annotations:
-    http_router: "{\"hosts\": [{\"host\": \"gitlabs.sbx.hod.gov.uk\", \"port\": \"80\"}]}"
+    http_router: "{\"hosts\": [{\"host\": \"gitlabs\", \"port\": \"80\"}]}"
 spec:
   ports:
     - port: 80
       targetPort: 80
   selector:
     name: gitlab-web
+  PublicIPs: [10.250.1.203,10.250.1.204]

@@ -1,0 +1,25 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-10 18:19:29 +0100 (Wed, 10 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+
+apiVersion: v1beta3
+kind: Service
+metadata:
+  labels:
+    name: jira-web
+    project: jira
+    role: service
+  name: jira-web
+  annotations:
+    http_router: "{\"hosts\": [{\"host\": \"jira\", \"port\": \"80\"}]}"
+spec:
+  ports:
+    - port: 8081
+      targetPort: 8080
+  selector:
+    name: jira-web
+  PublicIPs: [10.250.1.203,10.250.1.204]
