@@ -22,10 +22,21 @@ spec:
       containers:
       - name: gitlab-web
         image: sameersbn/gitlab:latest
+        volumeMounts:
+          - name: logs
+            mountPath: /var/log/gitlab
+          - name: data
+            mountPath: /home/git/data
         ports:
         - containerPort: 80
         - containerPort: 22
         - containerPort: 443
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          timeoutSeconds: 3
         env:
         - name: TERM 
           value: linux
@@ -34,7 +45,7 @@ spec:
         - name: DB_TYPE
           value: mysql
         - name: DB_HOST
-          value: 10.99.171.0
+          value: 10.99.243.97
         - name: DB_NAME
           value: gitlabhq
         - name: DB_USER
@@ -42,8 +53,32 @@ spec:
         - name: DB_PASS
           value: dfdsmfk983w
         - name: REDIS_HOST
-          value: 10.99.163.77
+          value: 10.99.150.190
         - name: GITLAB_HOST
           value: gitlabs
         - name: REDIS_PORT
           value: "6379"
+      volumes:
+        - name: data
+          rbd: 
+            monitors: 
+              - 10.250.1.53:6789
+              - 10.250.1.54:6789
+            pool: rbd
+            image: gitlab-data
+            user: admin
+            keyring: /etc/ceph/ceph.client.admin.keyring
+            fsType: xfs
+            readOnly: false
+        - name: logs
+          rbd: 
+            monitors: 
+              - 10.250.1.53:6789
+              - 10.250.1.54:6789
+            pool: rbd
+            image: gitlab-logs
+            user: admin
+            keyring: /etc/ceph/ceph.client.admin.keyring
+            fsType: xfs
+            readOnly: false
+      

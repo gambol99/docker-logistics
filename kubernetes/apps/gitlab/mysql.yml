@@ -22,11 +22,12 @@ spec:
       containers:
       - name: gitlab-mysql
         image: tutum/mysql
+        volumeMounts:
+          - name: mysql
+            mountPath: /var/lib/mysql
         ports:
         - containerPort: 3306
         env:
-        - name: SERVICE_3306_NAME
-          value: gitlabs-mysql
         - name: MYSQL_PASS
           value: dfdsmfk983w
         - name: REPLICATION_MASTER
@@ -35,3 +36,16 @@ spec:
           value: replication
         - name: REPLICATION_PASS
           value: d67as9f7sjhsdfsd
+      volumes:
+        - name: mysql
+          rbd: 
+            monitors: 
+              - 10.250.1.53:6789
+              - 10.250.1.54:6789
+            pool: rbd
+            image: gitlab-mysql
+            user: admin
+            keyring: /etc/ceph/ceph.client.admin.keyring
+            fsType: xfs
+            readOnly: false
+
