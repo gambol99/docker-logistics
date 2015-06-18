@@ -35,7 +35,7 @@ spec:
           httpGet:
             path: /
             port: 80
-          initialDelaySeconds: 30
+          initialDelaySeconds: 300
           timeoutSeconds: 3
         env:
         - name: TERM 
@@ -45,7 +45,7 @@ spec:
         - name: DB_TYPE
           value: mysql
         - name: DB_HOST
-          value: 10.99.243.97
+          value: 10.101.139.96
         - name: DB_NAME
           value: gitlabhq
         - name: DB_USER
@@ -53,7 +53,7 @@ spec:
         - name: DB_PASS
           value: dfdsmfk983w
         - name: REDIS_HOST
-          value: 10.99.150.190
+          value: 10.101.23.172
         - name: GITLAB_HOST
           value: gitlabs
         - name: REDIS_PORT

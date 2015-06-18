@@ -24,3 +24,10 @@ spec:
         image: redis
         ports:
         - containerPort: 6379
+        livenessProbe:
+          exec:
+            command:
+              - cat
+              - /tmp/health
+          initialDelaySeconds: 15
+          timeoutSeconds: 1

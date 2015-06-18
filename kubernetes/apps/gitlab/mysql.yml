@@ -30,12 +30,13 @@ spec:
         env:
         - name: MYSQL_PASS
           value: dfdsmfk983w
-        - name: REPLICATION_MASTER
-          value: "true"
-        - name: REPLICATION_USER
-          value: replication
-        - name: REPLICATION_PASS
-          value: d67as9f7sjhsdfsd
+        livenessProbe:
+          exec:
+            command:
+              - cat
+              - /tmp/health
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
       volumes:
         - name: mysql
           rbd: 
