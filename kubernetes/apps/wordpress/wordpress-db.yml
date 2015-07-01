@@ -1,0 +1,25 @@
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: wordpress-db
+spec:
+  replicas: 1
+  selector:
+    name: wordpress-db
+  template:
+    metadata:
+      labels:
+        name: wordpress-db
+    spec:
+      containers:
+      - name: wordpress-db
+        image: tutum/mysql
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_PASS
+          value: dfdsmfk983w
+        - name: ON_CREATE_DB
+          value: wordpress
+

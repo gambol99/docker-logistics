@@ -1,0 +1,32 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-20 15:04:57 +0100 (Sat, 20 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: varnish
+spec:
+  replicas: 2
+  selector:
+    name: varnish
+  template:
+    metadata:
+      labels:
+        name: varnish
+    spec:
+      containers:
+      - name: varnish
+        image: jacksoncage/varnish
+        ports:
+        - containerPort: 9098
+        env:
+          - name: VARNISH_BACKEND_PORT
+            value: '9090'
+          - name: VARNISH_BACKEND_IP
+            value: 10.101.100.31
+          - name: VARNISH_PORT
+            value: '9098'

@@ -1,0 +1,41 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-20 21:57:34 +0100 (Sat, 20 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: mysql-slave
+spec:
+  replicas: 1
+  selector:
+    name: mysql-slave
+  template:
+    metadata:
+      labels:
+        name: mysql-slave
+    spec:
+      containers:
+      - name: mysql-slave
+        image: tutum/mysql
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_PASS
+          value: dfdsmfk983w
+        - name: MYSQL_ENV_REPLICATION_USER
+          value: repl
+        - name: REPLICATION_SLAVE
+          value: 'true'
+        - name: MYSQL_ENV_REPLICATION_PASS
+          value: d9wd9wdslkd2w
+        - name: MYSQL_PORT_3306_TCP_ADDR
+          value: 10.101.100.77
+        - name: MYSQL_PORT_3306_TCP_PORT
+          value: '3306'
+        
+
+

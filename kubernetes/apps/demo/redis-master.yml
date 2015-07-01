@@ -1,26 +1,25 @@
 #
 #   Author: Rohith
-#   Date: 2015-05-20 23:35:53 +0100 (Wed, 20 May 2015)
+#   Date: 2015-06-19 16:31:01 +0100 (Fri, 19 Jun 2015)
 #
 #  vim:ts=2:sw=2:et
 #
----
 
 apiVersion: v1beta3
 kind: ReplicationController
 metadata:
-  name: gitlab-redis
+  name: redis-master
 spec:
   replicas: 1
   selector:
-    name: gitlab-redis
+    name: redis-master
   template:
     metadata:
       labels:
-        name: gitlab-redis
+        name: redis-master
     spec:
       containers:
-      - name: redis
+      - name: redis-master
         image: redis
         ports:
-        - containerPort: 6379
+        - containerPort: 6793

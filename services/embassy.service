@@ -19,7 +19,7 @@ RestartSec=2
 ExecStartPre=-/usr/bin/docker kill embassy.proxy
 ExecStartPre=-/usr/bin/docker rm embassy.proxy
 ExecStartPre=-/usr/bin/chmod og+rw /var/run/docker.sock
-ExecStartPre=/usr/bin/docker pull gambol99/embassy
+ExecStartPre=/usr/bin/docker pull gambol99/embassy:latest
 ExecStart=/usr/bin/docker run \
 --privileged=true \
 --net=host \
@@ -30,9 +30,9 @@ ExecStart=/usr/bin/docker run \
 -e IPTABLES_TRACK_MAX_CONNECTIONS=1048576 \ 
 -e IPTABLES_TRACK_TIMEOUT=30 \
 -v /var/run/docker.sock:/var/run/docker.sock \
-gambol99/embassy \
+gambol99/embassy:latest \
 --dnat -v=3 -interface=eth0 \
--discovery=consul://${COREOS_PRIVATE_IPV4}:8500 \
+-discovery=consul://${COREOS_PRIVATE_IPV4}:8500
 -provider=docker
 
 #-discovery=etcd://${COREOS_PRIVATE_IPV4}:4001 \

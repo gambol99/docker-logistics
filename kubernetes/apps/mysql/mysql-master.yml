@@ -1,0 +1,34 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-20 21:57:26 +0100 (Sat, 20 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: mysql-master
+spec:
+  replicas: 1
+  selector:
+    name: mysql-master
+  template:
+    metadata:
+      labels:
+        name: mysql-master
+    spec:
+      containers:
+      - name: mysql-master
+        image: tutum/mysql
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_PASS
+          value: dfdsmfk983w
+        - name: REPLICATION_USER
+          value: repl
+        - name: REPLICATION_MASTER
+          value: 'true'
+        - name: REPLICATION_PASS
+          value: d9wd9wdslkd2w

@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: gitlab-web
-        image: sameersbn/gitlab:latest
+        image: sameersbn/gitlab:7.9.3
         volumeMounts:
           - name: logs
             mountPath: /var/log/gitlab
@@ -45,7 +45,7 @@ spec:
         - name: DB_TYPE
           value: mysql
         - name: DB_HOST
-          value: 10.101.139.96
+          value: 10.101.1.101
         - name: DB_NAME
           value: gitlabhq
         - name: DB_USER
@@ -53,7 +53,7 @@ spec:
         - name: DB_PASS
           value: dfdsmfk983w
         - name: REDIS_HOST
-          value: 10.101.23.172
+          value: 10.101.1.100
         - name: GITLAB_HOST
           value: gitlabs
         - name: REDIS_PORT
@@ -64,6 +64,7 @@ spec:
             monitors: 
               - 10.250.1.53:6789
               - 10.250.1.54:6789
+              - 10.250.1.55:6789
             pool: rbd
             image: gitlab-data
             user: admin
@@ -75,6 +76,7 @@ spec:
             monitors: 
               - 10.250.1.53:6789
               - 10.250.1.54:6789
+              - 10.250.1.55:6789
             pool: rbd
             image: gitlab-logs
             user: admin

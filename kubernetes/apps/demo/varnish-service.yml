@@ -1,0 +1,22 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-20 15:05:01 +0100 (Sat, 20 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+apiVersion: v1beta3
+kind: Service
+metadata:
+  labels:
+    name: varnish
+  name: varnish
+spec:
+  ports:
+    - port: 9098
+      targetPort: 9098
+  selector:
+    name: varnish
+  PublicIPs: [172.31.21.101,172.31.21.102,172.31.21.103]
+
+

@@ -1,0 +1,36 @@
+#
+#   Author: Rohith
+#   Date: 2015-04-16 23:02:07 +0100 (Thu, 16 Apr 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+[Unit]
+Description=Prometheus Container Export
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=5
+ExecStartPre=-/usr/bin/docker kill prometheus-exportor
+ExecStartPre=-/usr/bin/docker rm prometheus-exportor
+ExecStartPre=/usr/bin/docker pull prom/container-exporter
+ExecStart=/usr/bin/docker run \
+--name prometheus-exportor \
+-p 9104:9104 \
+-e ENVIRONMENT=prod \
+-e SERVICE_NAME=prometheus-exportor \
+-e SERVICE_9104_NAME=prometheus-exportor \
+-v /sys/fs/cgroup:/cgroup \
+-v /var/run/docker.sock:/var/run/docker.sock \
+prom/container-exporter
+
+ExecStop=/usr/bin/docker stop prometheus.exportor
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true

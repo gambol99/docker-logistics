@@ -1,0 +1,28 @@
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: wordpress
+spec:
+  replicas: 1
+  selector:
+    name: wordpress
+  template:
+    metadata:
+      labels:
+        name: wordpress
+    spec:
+      containers:
+      - name: wordpress
+        image: tutum/wordpress-stackable
+        env:
+          - name: DB_PASS
+            value: dfdsmfk983w 
+          - name: DB_PORT
+            value: '3306'
+          - name: DB_USER
+            value: admin
+          - name: DB_HOST
+            value: 10.101.100.201
+        ports: 
+          - containerPort: 80

@@ -1,0 +1,19 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-20 21:43:46 +0100 (Sat, 20 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+apiVersion: v1beta3
+kind: Service
+metadata:
+  name: elasticsearch
+spec:
+  ports:
+    - port: 9200
+      targetPort: 9200
+  selector:
+    component: elasticsearch
+    role: load-balancer
+  PublicIPs: [10.250.1.203,10.250.1.204,10.250.1.205]

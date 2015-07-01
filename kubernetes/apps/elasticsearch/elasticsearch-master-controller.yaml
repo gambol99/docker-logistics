@@ -1,0 +1,37 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-20 21:21:50 +0100 (Sat, 20 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: elasticsearch
+spec:
+  replicas: 1
+  selector:
+    name: elasticsearch-master
+    component: elasticsearch
+    role: master
+  template:
+    metadata:
+      labels:
+        name: elasticsearch-master
+        component: elasticsearch
+        role: master
+    spec:
+      containers:
+      - name: elasticsearch-data
+        image: pires/elasticsearch:master
+        ports:
+          - name: transport
+            containerPort: 9300
+        volumeMounts:
+          - name: es-persistent-storage
+            mountPath: /data
+      volumes:
+        - name: es-persistent-storage
+          source:
+            emptyDir: {}

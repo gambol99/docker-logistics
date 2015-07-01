@@ -9,10 +9,8 @@
 apiVersion: v1beta3
 kind: Service
 metadata:
-  labels:
+  label:
     name: gitlab-mysql
-    project: gitlab
-    role: service
   name: gitlab-mysql
 spec:
   ports:
@@ -20,4 +18,4 @@ spec:
       targetPort: 3306
   selector:
     name: gitlab-mysql
-
+  portalIP: 10.101.1.101

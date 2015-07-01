@@ -1,0 +1,25 @@
+{
+  "id": "/my/product",
+  "args": [
+    "/usr/sbin/apache2ctl",
+    "-D",
+    "FORGROUND"
+  ],
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "quay.io/gambol99/apache-php:latest",
+      "network": "BRIDGE",
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "hostPort": 0,
+          "protocol": "tcp"
+        }
+      ]
+    }
+  },
+  "cpus": 0.1,
+  "instances": 2,
+  "mem": 64
+}

@@ -1,0 +1,21 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-19 11:55:06 +0100 (Fri, 19 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+apiVersion: v1beta3
+kind: Service
+metadata:
+  labels:
+    name: wordpress-db
+  name: wordpress-db
+spec:
+  portalIP: 10.101.100.201
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    name: wordpress-db
+

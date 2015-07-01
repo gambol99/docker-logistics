@@ -1,23 +1,22 @@
 #
 #   Author: Rohith
-#   Date: 2015-05-20 23:36:07 +0100 (Wed, 20 May 2015)
+#   Date: 2015-06-20 21:57:30 +0100 (Sat, 20 Jun 2015)
 #
 #  vim:ts=2:sw=2:et
 #
----
 
 apiVersion: v1beta3
 kind: Service
 metadata:
   labels:
-    name: gitlab-mysql
-    project: gitlab
-    role: service
-  name: gitlab-mysql
+    name: mysql-master
+  name: mysql-master
 spec:
+  portalIP: 10.101.100.77
   ports:
     - port: 3306
       targetPort: 3306
   selector:
-    name: gitlab-mysql
+    name: mysql-master
+
 

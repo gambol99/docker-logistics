@@ -1,0 +1,25 @@
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: demo-db
+spec:
+  replicas: 1
+  selector:
+    name: demo-db
+  template:
+    metadata:
+      labels:
+        name: demo-db
+    spec:
+      containers:
+      - name: demo-db
+        image: tutum/mysql
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_PASS
+          value: dfdsmfk983w
+        - name: ON_CREATE_DB
+          value: demo
+

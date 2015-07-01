@@ -10,21 +10,17 @@ apiVersion: v1beta3
 kind: Service
 metadata:
   labels:
-    name: gitlab-web
-  name: gitlab-web
+    name: apache
+  name: apache
   annotations:
     loadbalancer: |
       80:
         type: http
         port: 9091
-        vhost: gitlab.sbx.hod.gov.uk
+        vhost: gitlab.example.com
 spec:
   ports:
-    - name: http
-      port: 80
+    - port: 80
       targetPort: 80
-    - name: https
-      port: 443
-      targetPort: 443
   selector:
-    name: gitlab-web
+    name: apache

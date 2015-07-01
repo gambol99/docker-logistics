@@ -1,0 +1,95 @@
+---
+id: /commons
+groups:
+- id: gitlabs
+  apps:
+  - id: apache
+    mem: 512
+    cpus: 0.2
+    args: []
+    instances: 1
+    container:
+      type: DOCKER
+      docker:
+        image: sameersbn/gitlab:7.9.3
+        network: BRIDGE
+        portMappings:
+        - containerPort: 80
+          hostPort: 0
+          protocol: tcp
+        - containerPort: 443
+          hostPort: 0
+          protocol: tcp
+        - containerPort: 22
+          hostPort: 0
+          protocol: tcp
+        parameters:
+          - key: --interactive
+            value: true
+          - key: --tty
+            value: true
+    env:
+      TERM: linux
+      DEBIAN_FRONTEND: noninteractive
+      DB_TYPE: mysql
+      DB_HOST: 172.17.42.1
+      DB_NAME: gitlabhq
+      DB_USER: admin
+      DB_PASS: dfdsmfk983w
+      REDIS_HOST: 172.17.42.1
+      REDIS_PORT: 6379
+      BACKEND_MYSQL: /commons/gitlabs/mysql/3306;3306
+      BACKEND_REDIS: /commons/gitlabs/redis/6379;6379
+    dependencies:
+      - /commons/gitlabs/mysql
+      - /commons/gitlabs/redis
+  - id: redis
+    mem: 128
+    cpus: 0.2
+    instances: 1
+    container:
+      type: DOCKER
+      docker:
+        image: redis
+        network: BRIDGE
+        portMappings:
+        - containerPort: 6379
+          hostPort: 0
+          protocol: tcp
+    healthChecks:
+    - portIndex: 0
+      protocol: TCP
+      gracePeriodSeconds: 10
+      intervalSeconds: 10
+      timeoutSeconds: 5
+      maxConsecutiveFailures: 2
+    env:
+      ENVIRONMENT: commons
+      SERVICE_6379_NAME: gitlabs-redis
+  - id: mysql
+    mem: 512
+    cpus: 0.2
+    instances: 1
+    container:
+      type: DOCKER
+      docker:
+        image: tutum/mysql
+        network: BRIDGE
+        portMappings:
+        - containerPort: 3306
+          hostPort: 0
+          protocol: tcp
+    healthChecks:
+    - portIndex: 0
+      protocol: TCP
+      gracePeriodSeconds: 10
+      intervalSeconds: 10
+      timeoutSeconds: 5
+      maxConsecutiveFailures: 2
+    env:
+      ENVIRONMENT: commons
+      SERVICE_3306_NAME: gitlabs-mysql
+      MYSQL_PASS: dfdsmfk983w
+      REPLICATION_MASTER: 'true'
+      REPLICATION_USER: replication
+      REPLICATION_PASS: 8d67as9f7sjhsdfsd

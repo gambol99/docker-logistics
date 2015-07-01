@@ -18,8 +18,8 @@ metadata:
     http_router: "{\"hosts\": [{\"host\": \"jira\", \"port\": \"80\"}]}"
 spec:
   ports:
-    - port: 8081
+    - port: 9092
       targetPort: 8080
   selector:
     name: jira-web
-  PublicIPs: [10.250.1.203,10.250.1.204]
+  PublicIPs: [10.250.1.203,10.250.1.204,10.250.1.205]

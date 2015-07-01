@@ -1,21 +1,19 @@
 #
 #   Author: Rohith
-#   Date: 2015-05-20 23:35:55 +0100 (Wed, 20 May 2015)
+#   Date: 2015-06-19 16:31:08 +0100 (Fri, 19 Jun 2015)
 #
 #  vim:ts=2:sw=2:et
 #
----
 
 apiVersion: v1beta3
 kind: Service
 metadata:
   labels:
-    name: gitlab-redis
-  name: gitlab-redis
+    name: redis-slave
+  name: redis-slave
 spec:
-  portalIP: 10.101.1.100
   ports:
     - port: 6379
       targetPort: 6379
   selector:
-    name: gitlab-redis
+    name: redis-slave

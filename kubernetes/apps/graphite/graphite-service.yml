@@ -1,0 +1,28 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-19 15:11:52 +0100 (Fri, 19 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+kind: Service
+metadata:
+  name: graphite
+  labels:
+    name: graphite
+spec:
+  portalIP: 10.101.100.99
+  selector:
+    name: graphite
+  ports:
+    - name: web
+      port: 9093
+      targetPort: 80
+    - name: carbon
+      port: 2003
+      targetPort: 2003
+    - name: statsd
+      port: 8125
+      targetPort: 8125
+      protocol: UDP
+  PublicIPs: [10.250.1.203,10.250.1.204,10.250.1.205]

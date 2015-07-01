@@ -1,0 +1,36 @@
+#
+#   Author: Rohith
+#   Date: 2015-06-19 16:31:04 +0100 (Fri, 19 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+#
+#   Author: Rohith
+#   Date: 2015-06-19 16:31:01 +0100 (Fri, 19 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  name: redis-slave
+spec:
+  replicas: 1
+  selector:
+    name: redis-slave
+  template:
+    metadata:
+      labels:
+        name: redis-slave
+    spec:
+      containers:
+      - name: redis-slave
+        image: redis
+        ports:
+        - containerPort: 6793
+        args:
+          - redis-server
+          - --slaveof
+          - 10.101.100.21
+          - '6379'

@@ -1,0 +1,20 @@
+{
+   "kind":"Service",
+   "apiVersion":"v1beta3",
+   "metadata":{
+      "name":"frontend",
+      "labels":{
+         "name":"frontend"
+      }
+   },
+   "spec":{
+      "ports": [
+        {
+          "port":80
+        }
+      ],
+      "selector":{
+         "name":"frontend"
+      }
+   }
+}
