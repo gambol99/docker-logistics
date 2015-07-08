@@ -4,27 +4,23 @@
 #
 #  vim:ts=2:sw=2:et
 #
----
-
-apiVersion: v1beta3
+apiVersion: v1
 kind: Service
 metadata:
   labels:
     name: gitlab-web
   name: gitlab-web
-  annotations:
-    loadbalancer: |
-      80:
-        type: http
-        port: 9091
-        vhost: gitlab.sbx.hod.gov.uk
+#  annotations:
+#    loadbalancer: |
+#      80:
+#        type: http
+#        port: 9091
+#        vhost: gitlab.sbx.hod.gov.uk
 spec:
+  type: NodePort
   ports:
     - name: http
       port: 80
       targetPort: 80
-    - name: https
-      port: 443
-      targetPort: 443
   selector:
     name: gitlab-web

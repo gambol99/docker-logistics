@@ -18,7 +18,8 @@ metadata:
         type: http
         port: 9091
         vhost: gitlab.example.com
-spec:
+spec: 
+  type: NodePort
   ports:
     - port: 80
       targetPort: 80

@@ -11,12 +11,15 @@ kind: Service
 metadata:
   labels:
     name: artifactory
-    project: artifactory
-    role: service
   name: artifactory
   annotations:
-    http_router: "{\"hosts\": [{\"host\": \"artifactory.sbx.hod.gov.uk\", \"port\": \"80\"}]}"
+    loadbalancer: |
+      80:
+        type: http
+        port: 9091
+        vhost: artifactory.example.com
 spec:
+  type: NodePort
   ports:
     - port: 80
       targetPort: 8081

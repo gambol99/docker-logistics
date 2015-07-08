@@ -10,7 +10,12 @@ kind: Service
 metadata:
   labels:
     name: redis-master
-  name: redis-master
+  name: redis-master 
+  annotations:
+    loadbalancer: |
+      6379:
+        port: 7777
+        type: tcp
 spec:
   portalIP: 10.101.100.21
   ports:

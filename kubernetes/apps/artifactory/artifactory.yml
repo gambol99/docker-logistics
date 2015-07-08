@@ -24,12 +24,3 @@ spec:
         image: otechlabs/artifactory
         ports:
         - containerPort: 8081
-        volumeMounts:
-          - mountPath: /opt/artifactory
-            name: artifactory
-      volumes:
-        - name: artifactory
-          glusterfs: 
-            endpoints: glusterfs-cluster
-            path: artifactory
-            readOnly: false
