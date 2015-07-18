@@ -1,0 +1,30 @@
+#
+#   Author: Rohith
+#   Date: 2015-07-18 20:28:48 +0100 (Sat, 18 Jul 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: grafana
+  name: grafana
+  annotations:
+    loadbalancer: |
+      3000:
+        type: http
+        port: 80
+        vhost: grafana.sbx.hod.gov.uk
+        ssl:
+          cert: /etc/ssl/certs/wildcard.sbx.hod.gov.uk.crt
+          key: /etc/ssl/certs/wildcard.sbx.hod.gov.uk.key
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+  selector:
+    name: grafana

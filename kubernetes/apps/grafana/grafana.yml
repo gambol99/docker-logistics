@@ -1,0 +1,58 @@
+#
+#   Author: Rohith
+#   Date: 2015-07-18 20:28:44 +0100 (Sat, 18 Jul 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    name: grafana
+  template:
+    metadata:
+      labels:
+        name: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: gambol99/grafana:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: password
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/grafana
+        - name: logs
+          mountPath: /var/log/grafana
+      volumes:
+        - name: data
+          rbd:
+            monitors:
+              - 10.250.1.51:6789
+              - 10.250.1.52:6789
+              - 10.250.1.53:6789
+            pool: rbd
+            image: grafana-data
+            user: admin
+            keyring: /etc/ceph/ceph.client.admin.keyring
+            fsType: xfs
+            readOnly: false
+        - name: logs
+          rbd:
+            monitors:
+              - 10.250.1.51:6789
+              - 10.250.1.52:6789
+              - 10.250.1.53:6789
+            pool: rbd
+            image: grafana-log
+            user: admin
+            keyring: /etc/ceph/ceph.client.admin.keyring
+            fsType: xfs
+            readOnly: false

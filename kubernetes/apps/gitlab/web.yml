@@ -22,11 +22,11 @@ spec:
       containers:
       - name: gitlab-web
         image: sameersbn/gitlab:7.9.3
-#        volumeMounts:
-#          - name: logs
-#            mountPath: /var/log/gitlab
-#          - name: data
-#            mountPath: /home/git/data
+        volumeMounts:
+          - name: logs
+            mountPath: /var/log/gitlab
+          - name: data
+            mountPath: /home/git/data
         ports:
         - containerPort: 80
         - containerPort: 22
@@ -38,7 +38,7 @@ spec:
           initialDelaySeconds: 300
           timeoutSeconds: 3
         env:
-        - name: TERM 
+        - name: TERM
           value: linux
         - name: DEBIAN_FRONTEND
           value: noninteractive
@@ -58,29 +58,28 @@ spec:
           value: gitlabs
         - name: REDIS_PORT
           value: "6379"
-#      volumes:
-#        - name: data
-#          rbd: 
-#            monitors: 
-#              - 10.250.1.51:6789
-#              - 10.250.1.52:6789
-#              - 10.250.1.53:6789
-#            pool: rbd
-#            image: gitlab-data
-#            user: admin
-#            keyring: /etc/ceph/ceph.client.admin.keyring
-#            fsType: xfs
-#            readOnly: false
-#        - name: logs
-#          rbd: 
-#            monitors: 
-#              - 10.250.1.51:6789
-#              - 10.250.1.52:6789
-#              - 10.250.1.53:6789
-#            pool: rbd
-#            image: gitlab-logs
-#            user: admin
-#            keyring: /etc/ceph/ceph.client.admin.keyring
-#            fsType: xfs
-#            readOnly: false
-#      
+      volumes:
+        - name: data
+          rbd:
+            monitors:
+              - 10.250.1.51:6789
+              - 10.250.1.52:6789
+              - 10.250.1.53:6789
+            pool: rbd
+            image: gitlab-data
+            user: admin
+            keyring: /etc/ceph/ceph.client.admin.keyring
+            fsType: xfs
+            readOnly: false
+        - name: logs
+          rbd:
+            monitors:
+              - 10.250.1.51:6789
+              - 10.250.1.52:6789
+              - 10.250.1.53:6789
+            pool: rbd
+            image: gitlab-logs
+            user: admin
+            keyring: /etc/ceph/ceph.client.admin.keyring
+            fsType: xfs
+            readOnly: false

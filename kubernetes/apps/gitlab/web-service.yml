@@ -10,17 +10,37 @@ metadata:
   labels:
     name: gitlab-web
   name: gitlab-web
-#  annotations:
-#    loadbalancer: |
-#      80:
-#        type: http
-#        port: 9091
-#        vhost: gitlab.sbx.hod.gov.uk
+  annotations:
+    loadbalancer: |
+      80:
+        type: http
+        vhost: gitlab.sbx.hod.gov.uk
+        redirect:
+          path: /
+          url: https://gitlab.sbx.hod.gov.uk
+      443:
+        type: http
+        vhost: gitlab.sbx.hod.gov.uk
+        paths:
+          - path: /
+            backend: 80_gitlab-web
+        ssl:
+          cert: /etc/ssl/certs/wildcard.sbx.hod.gov.uk.crt
+          key: /etc/ssl/certs/wildcard.sbx.hod.gov.uk.key
+      22:
+        type: tcp
+        port: 2222
 spec:
   type: NodePort
   ports:
     - name: http
       port: 80
       targetPort: 80
+    - name: https
+      port: 443
+      targetPort: 443
+    - name: ssh
+      port: 22
+      targetPort: 22
   selector:
     name: gitlab-web
