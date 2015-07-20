@@ -1,0 +1,28 @@
+#
+#   Author: Rohith
+#   Date: 2015-07-20 13:35:37 +0100 (Mon, 20 Jul 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: influxdb
+spec:
+  replicas: 1
+  selector:
+    name: influxdb
+  template:
+    metadata:
+      labels:
+        name: influxdb
+    spec:
+      containers:
+      - name: influxdb
+        image: tutum/influxdb:0.9
+        ports:
+        - containerPort: 8083
+        - containerPort: 8086
+        - containerPort: 8090
+        - containerPort: 8099

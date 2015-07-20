@@ -1,0 +1,30 @@
+#
+#   Author: Rohith
+#   Date: 2015-07-20 13:35:41 +0100 (Mon, 20 Jul 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: influxdb
+  name: influxdb
+  annotations:
+    loadbalancer: |
+      8083:
+        type: http
+        port: 80
+        vhost: influxdb.sbx.hod.gov.uk
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 8083
+      targetPort: 8083
+    - name: api
+      port: 8086
+      targetPort: 8086
+  selector:
+    name: influxdb
