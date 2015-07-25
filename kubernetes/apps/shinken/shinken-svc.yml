@@ -1,0 +1,25 @@
+#
+#   Author: Rohith
+#   Date: 2015-07-25 11:22:15 +0100 (Sat, 25 Jul 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: shinken
+  name: shinken
+  annotations:
+    loadbalancer: |
+      80:
+        type: http
+        vhost: shinken.sbx.hod.gov.uk
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    name: shinken

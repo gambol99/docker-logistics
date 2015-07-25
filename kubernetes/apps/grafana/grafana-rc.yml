@@ -1,0 +1,28 @@
+#
+#   Author: Rohith
+#   Date: 2015-07-18 20:28:44 +0100 (Sat, 18 Jul 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: grafana
+spec:
+  replicas: 2
+  selector:
+    name: grafana
+  template:
+    metadata:
+      labels:
+        name: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: gambol99/grafana:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: password

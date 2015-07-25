@@ -1,0 +1,24 @@
+#
+#   Author: Rohith
+#   Date: 2015-07-25 11:22:13 +0100 (Sat, 25 Jul 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: shinken
+spec:
+  replicas: 1
+  selector:
+    name: shinken
+  template:
+    metadata:
+      labels:
+        name: shinken
+    spec:
+      containers:
+      - name: shinken
+        image: rohit01/shinken
+        ports:
+        - containerPort: 80
