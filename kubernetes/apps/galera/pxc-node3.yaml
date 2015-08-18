@@ -1,14 +1,26 @@
-id: pxc-node3
-kind: Pod
-apiVersion: v1beta1
-desiredState:
-  manifest:
-    version: v1beta1
-    id: pxc-node3
-    containers:
-      - name: pxc-node3
+#
+#   Author: Rohith
+#   Date: 2015-07-18 20:28:44 +0100 (Sat, 18 Jul 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: gitlab-mysql3
+spec:
+  replicas: 1
+  selector:
+    name: gitlab-mysql3
+  template:
+    metadata:
+      labels:
+        name: gitlab-mysql3
+    spec:
+      containers:
+      - name: mysql
         image: capttofu/percona_xtradb_cluster_5_6:latest
-        cpu: 100
         ports:
           - containerPort: 3306
             hostPort: 3306
@@ -30,6 +42,21 @@ desiredState:
           - name: MYSQL_PASSWORD
             value: mysql
           - name: MYSQL_ROOT_PASSWORD
-            value: c-kr1t 
-labels:
-  name: pxc-node3
+            value: c-krit
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+      volumes:
+        - name: data
+          rbd:
+            monitors:
+              - 10.50.10.100:6789
+              - 10.50.11.100:6789
+              - 10.50.12.100:6789
+            pool: rbd
+            image: gitlab-mysql3
+            user: admin
+            secretRef:
+              name: ceph-secret
+            fsType: xfs
+            readOnly: false

@@ -6,7 +6,7 @@
 #
 ---
 
-apiVersion: v1beta3
+apiVersion: v1
 kind: ReplicationController
 metadata:
   name: gitlab-redis
@@ -18,9 +18,19 @@ spec:
     metadata:
       labels:
         name: gitlab-redis
+      annotations:
+        metrics: |
+          - name: redis
+            port: 9001
     spec:
       containers:
       - name: redis
         image: redis
         ports:
         - containerPort: 6379
+      - name: metrics
+        image: 21zoo/redis_exporter
+        args:
+        - -web.listen-address=0.0.0.0:9001
+        ports:
+        - containerPort: 9001

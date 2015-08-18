@@ -5,8 +5,7 @@
 #  vim:ts=2:sw=2:et
 #
 ---
-
-apiVersion: v1beta3
+apiVersion: v1
 kind: ReplicationController
 metadata:
   name: gitlab-mysql
@@ -32,15 +31,15 @@ spec:
           value: dfdsmfk983w
       volumes:
         - name: mysql
-          rbd: 
-            monitors: 
-              - 10.250.1.51:6789
-              - 10.250.1.52:6789
-              - 10.250.1.53:6789
+          rbd:
+            monitors:
+              - 10.50.10.100:6789
+              - 10.50.11.100:6789
+              - 10.50.12.100:6789
             pool: rbd
             image: gitlab-mysql
             user: admin
-            keyring: /etc/ceph/ceph.client.admin.keyring
+            secretRef:
+              name: ceph-secret
             fsType: xfs
             readOnly: false
-

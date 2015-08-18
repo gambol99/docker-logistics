@@ -14,19 +14,13 @@ metadata:
     loadbalancer: |
       80:
         type: http
-        vhost: gitlab.sbx.hod.gov.uk
-        redirect:
-          path: /
-          url: https://gitlab.sbx.hod.gov.uk
+        vhost: gitlab.example.com
       443:
         type: http
-        vhost: gitlab.sbx.hod.gov.uk
-        paths:
-          - path: /
-            backend: 80_gitlab-web
+        vhost: 
         ssl:
-          cert: /etc/ssl/certs/wildcard.sbx.hod.gov.uk.crt
-          key: /etc/ssl/certs/wildcard.sbx.hod.gov.uk.key
+          cert: /etc/ssl/certs/wildcard.example.com.crt
+          key: /etc/ssl/certs/wildcard.example.com.key
       22:
         type: tcp
         port: 2222
@@ -38,7 +32,7 @@ spec:
       targetPort: 80
     - name: https
       port: 443
-      targetPort: 443
+      targetPort: 80
     - name: ssh
       port: 22
       targetPort: 22

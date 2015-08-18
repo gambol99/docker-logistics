@@ -5,8 +5,7 @@
 #  vim:ts=2:sw=2:et
 #
 ---
-
-apiVersion: v1beta3
+apiVersion: v1
 kind: ReplicationController
 metadata:
   name: gitlab-web
@@ -20,8 +19,18 @@ spec:
         name: gitlab-web
     spec:
       containers:
+      - name: gitlab-mysql
+        image: tutum/mysql
+        volumeMounts:
+          - name: mysql
+            mountPath: /var/lib/mysql
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_PASS
+          value: dfdsmfk983w
       - name: gitlab-web
-        image: sameersbn/gitlab:7.9.3
+        image: sameersbn/gitlab:7.13.5
         volumeMounts:
           - name: logs
             mountPath: /var/log/gitlab
@@ -45,7 +54,7 @@ spec:
         - name: DB_TYPE
           value: mysql
         - name: DB_HOST
-          value: 10.101.1.101
+          value: 127.0.0.1
         - name: DB_NAME
           value: gitlabhq
         - name: DB_USER
@@ -55,31 +64,48 @@ spec:
         - name: REDIS_HOST
           value: 10.101.1.100
         - name: GITLAB_HOST
-          value: gitlabs
+          value: gitlab.example.com
         - name: REDIS_PORT
           value: "6379"
+        - name: GITLAB_SSH_PORT
+          value: "2222"
       volumes:
         - name: data
           rbd:
             monitors:
-              - 10.250.1.51:6789
-              - 10.250.1.52:6789
-              - 10.250.1.53:6789
+              - 10.50.10.100:6789
+              - 10.50.11.100:6789
+              - 10.50.12.100:6789
             pool: rbd
             image: gitlab-data
             user: admin
-            keyring: /etc/ceph/ceph.client.admin.keyring
+            secretRef:
+              name: ceph-secret
+            fsType: xfs
+            readOnly: false
+        - name: mysql
+          rbd:
+            monitors:
+              - 10.50.10.100:6789
+              - 10.50.11.100:6789
+              - 10.50.12.100:6789
+            pool: rbd
+            image: gitlab-mysql
+            user: admin
+            secretRef:
+              name: ceph-secret
             fsType: xfs
             readOnly: false
         - name: logs
           rbd:
             monitors:
-              - 10.250.1.51:6789
-              - 10.250.1.52:6789
-              - 10.250.1.53:6789
+              - 10.50.10.100:6789
+              - 10.50.11.100:6789
+              - 10.50.12.100:6789
             pool: rbd
             image: gitlab-logs
             user: admin
-            keyring: /etc/ceph/ceph.client.admin.keyring
+            secretRef:
+              name: ceph-secret
             fsType: xfs
             readOnly: false
